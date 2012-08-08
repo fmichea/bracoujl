@@ -16,34 +16,6 @@ OPCODE_LINE = re.compile('\[([A-Za-z0-9]+)\] Opcode : ([0-9A-Za-z]{2}), PC : ([A
 DISSAS_LINE = re.compile('\[([A-Za-z0-9]{4})] ([^O:]+)')
 
 
-class DotWriter(object):
-    def __init__(self, output_file = None):
-        if output_file is None: self.f = sys.stdout
-        else: self.f = open(output_file, 'w')
-
-        self.f.write('digraph Nebula {\n')
-        self.f.write('\tsplines = true;\n')
-        self.f.write('\tnode [ shape = box, fontname = "Deja Vu Sans Mono" ];\n\n')
-
-    def __del__(self):
-        self.f.write('}\n')
-        self.f.close()
-
-    def generate(self, graph):
-        addrs = sorted(graph.nodes.keys())
-        for addr in addrs:
-            block = graph.nodes[addr]
-            self.f.write('\tnode_{addr:04X} [ label = "{code}" ];\n'.format(
-                addr = block.addr,
-                code = str(block).replace('\n', '\\l')
-            ))
-        self.f.write('\n')
-        for link in list(graph.links):
-            self.f.write("""\tnode_{addr1:04X} -> node_{addr2:04X} [ color = {color}, tailport = s, headport = n ];\n""".format(
-                addr1 = link.from_,
-                addr2 = link.to_,
-                color = link.color()
-            ))
 
 
 
