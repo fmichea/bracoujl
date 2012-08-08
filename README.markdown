@@ -19,6 +19,7 @@ This script is in heavy developement, so these instructions can break any day
 now. But here is a idea of how it works:
 
 Format of the logs (this will probably change soon, to be more configurable):
+
 * On one line: `[HEX_NUMBER] Opcode : HEX_NUMBER, PC : HEX_NUMBER`.
     * Opcode should be 2 digits. (for now)
     * PC should be 4 digits. (for now)
@@ -27,11 +28,13 @@ Format of the logs (this will probably change soon, to be more configurable):
     * DISASS can be any string.
 
 To generate a graph from logs:
+
 * `python2 bracoujl --dotify --input my_logs.logs --output my_logs.dot`
 * `dot -Tsvg my_logs.dot -o my_logs.svg`
 * Enjoy you graph watching with `eog` or whatever.
 
 To compare two graphs:
+
 * `python2 bracoujl --compare --input my_logs.logs --input my_logs2.logs`
 
 You can serialize logs to avoid loading them each time with `-s` option, see
