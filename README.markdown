@@ -15,6 +15,10 @@ Obviously this is my use-case, but you could find another one if you want.
 How do I use it?
 ----------------
 
+Note: The script is completly broken right now (HEAD), please checkout commit
+`592fbe74983c...` ([link](https://bitbucket.org/kushou/bracoujl/changeset/592fbe74983c2e0d9b218f5cc8a1db81))
+to get the last working script.
+
 This script is in heavy developement, so these instructions can break any day
 now. But here is a idea of how it works:
 
