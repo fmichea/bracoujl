@@ -43,6 +43,7 @@ You can serialize logs to avoid loading them each time with `-s` option, see
 Other informations
 ------------------
 
+* Example of result: [1](http://kushou.eu/images/nebula.svg)
 * If you see several paths after a call, it probably means the function called
   modifies its return address (for example if it's on the stack).
 * Could be named `jarbocul`, you can vote! (I just don't know how)
