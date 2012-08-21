@@ -9,9 +9,17 @@ import sys
 import bracoujl.config
 
 
+def _readlines(f):
+    line = f.readline()
+    while line:
+        yield line[:-1]
+        line = f.readline()
+
 def _enum(**enums):
     return type('Enum', (), enums)
 
+LinkType = _enum(NORMAL='black', CALL='blue', MEMORY_CHANGE='red')
+GraphState = _enum(NORMAL_GRAPH=0, INTERRUPT=1)
 
 class SerializedGraph(object):
     '''Loads and writes a serialized representation of a graph in a file.'''
@@ -37,9 +45,6 @@ class SerializedGraph(object):
         f = open(self.filename, 'wb')
         pickle.dump(graph, f)
         f.close()
-
-
-LinkType = _enum(NORMAL='black', CALL='blue', MEMORY_CHANGE='red')
 
 
 class Link(object):
@@ -207,13 +212,6 @@ class SubGraph(object):
             res.append(link)
         self.links = set(res)
 
-def _readlines(f):
-    line = f.readline()
-    while line:
-        yield line[:-1]
-        line = f.readline()
-
-GraphState = _enum(NORMAL_GRAPH=0, INTERRUPT=1)
 
 class Graph(object):
     def __init__(self):
