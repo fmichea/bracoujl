@@ -2,6 +2,8 @@
 # Author: Franck Michea < franck.michea@gmail.com >
 # License: New BSD License (See LICENSE)
 
+import sys
+
 class AsciiWriter(object):
     def __init__(self, output_file = None):
         if output_file is None:

@@ -2,6 +2,8 @@
 # Author: Franck Michea < franck.michea@gmail.com >
 # License: New BSD License (See LICENSE)
 
+import sys
+
 class DotWriter(object):
     def __init__(self, output_file = None):
         if output_file is None:
@@ -17,18 +19,35 @@ class DotWriter(object):
         self.f.write('}\n')
         self.f.close()
 
-    def generate(self, graph):
-        addrs = sorted(graph.nodes.keys())
+    def generate_subgraph(self, subgraph):
+        self.f.write('\tsubgraph {subgraph_name} {{\n'.format(
+            subgraph_name = subgraph.name(),
+        ))
+        addrs = sorted(subgraph.blocks.keys())
         for addr in addrs:
-            block = graph.nodes[addr]
-            self.f.write('\tnode_{addr:04X} [ label = "{code}" ];\n'.format(
-                addr = block.addr,
-                code = str(block).replace('\n', '\\l')
+            block = subgraph.blocks[addr]
+            self.f.write('\t\t{block_name} [ label = "{code}\\l" ];\n'.format(
+                block_name = block.node_name(),
+                code = str(block).replace('\n', '\\l').replace('\t', ' ' * 4)
             ))
         self.f.write('\n')
-        for link in list(graph.links):
-            self.f.write("""\tnode_{addr1:04X} -> node_{addr2:04X} [ color = {color}, tailport = s, headport = n ];\n""".format(
-                addr1 = link.from_,
-                addr2 = link.to_,
-                color = link.color()
-            ))
+        for link in list(subgraph.links):
+            self.f.write('\t\t{}\n'.format(self.generate_link(link)))
+        self.f.write('\t}\n')
+
+    def generate_link(self, link):
+        return '{block1} -> {block2} [ {options} ];'.format(
+            block1 = link._from.node_name(),
+            block2 = link.to.node_name(),
+            options = 'color = {color}, tailport = s, headport = n'.format(
+                color = link.type,
+            )
+        )
+
+    def generate(self, graph):
+        for subgraph in graph.graphs:
+            self.generate_subgraph(subgraph)
+        for name, interrupt in graph.interrupts.items():
+            self.generate_subgraph(interrupt)
+        for link in graph.graph_links:
+            self.f.write('\t{}\n'.format(self.generate_link(link)))

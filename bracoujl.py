@@ -5,18 +5,18 @@
 
 import argparse
 import os
-import pickle
-import re
 import sys
 
-
+import bracoujl.graph
+import bracoujl.writers.dotwriter
+import bracoujl.writers.asciiwriter
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Some debugging tool.')
     parser.add_argument('-i', '--input', action='append', required=True,
-                        metavar='filename', help='Input file (logs from nebula).')
+                        metavar='filename', help='Input file.')
     parser.add_argument('-o', '--output', action='store', required=False,
-                        metavar='filename', help='Output file (default: prints on stdout).')
+                        metavar='filename', help='Output file.')
     parser.add_argument('-d', '--dotify', action='store_true', default=False,
                         help='Translates graph to dot.')
     parser.add_argument('-a', '--ascii', action='store_true', default=False,
@@ -32,18 +32,21 @@ if __name__ == '__main__':
         input_filename = args.input[it]
         if not os.path.isfile(input_filename):
             sys.exit('File `%s` was not found...' % input_filename)
-        ser = SerializedGraph(args.serialize, input_filename)
-        graph = ser.read()
-        if graph is None:
-            graph = Graph()
-            graph.generate(input_filename)
-            ser.write(graph)
+        #ser = braocujl.graph.SerializedGraph(args.serialize, input_filename)
+        #graph = ser.read()
+        #if graph is None:
+        graph = bracoujl.graph.Graph()
+        graph.generate(input_filename)
+        #    ser.write(graph)
         graphs.append(graph)
 
     if args.dotify or args.ascii:
         output_filename = args.output if args.output else None
-        if args.dotify: DotWriter(output_filename).generate(graphs[0])
-        else: AsciiWriter(output_filename).generate(graphs[0])
+        if args.dotify:
+            writer = bracoujl.writers.dotwriter.DotWriter(output_filename)
+        else:
+            writer = bracoujl.writers.asciiwriter.AsciiWriter(output_filename)
+        writer.generate(graphs[0])
     elif args.compare:
         if len(graphs) < 2:
             sys.exit('Need two graphs to compare them.')
