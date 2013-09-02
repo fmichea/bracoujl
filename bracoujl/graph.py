@@ -106,7 +106,8 @@ class Instruction:
         return self._inst[item]
 
     def __eq__(self, other):
-        return (self['pc'], self['opcode']) == (other['pc'], other['opcode'])
+        f = lambda obj: (obj['pc'], obj['opcode'], obj['mem'])
+        return f(self) == f(other)
 
 
 class Block:
@@ -176,6 +177,12 @@ class Block:
         self.tos = Counter()
         for to in list(other.tos):
             Link(self, other).do_link()
+
+    def __eq__(self, other):
+        # This will also check addresses and the like. Don't forget to change
+        # this if it is not the case anymore.
+        return self.insts == other.insts
+
 
 class SpecialBlock(Block):
     def __init__(self, inst, label, mergeable=True):
