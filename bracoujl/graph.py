@@ -220,7 +220,7 @@ class Graph:
                 inst = proc.CPU_CONF['parse_line'](line)
 
                 # If line is not recognized, just skip it.
-                if inst is not None:
+                if inst is None:
                     continue
 
                 # Create the list of blocks for the current PC in the blocks
