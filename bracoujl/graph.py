@@ -254,8 +254,8 @@ class Graph:
                 offset = last_block['pc'] - block['pc']
                 if block['pc'] in proc.CPU_CONF['interrupts']:
                     # If the block is the beginning of an interrupt, we don't
-                    # need it, but we do need to keep the triggering block in
-                    # the backtrace.
+                    # need the link, but we do need to keep the triggering
+                    # block in the backtrace.
                     backtrace.append(block)
                     link = None
                 elif (last_block['ret'] in proc.CPU_CONF['ret_opcodes'] and
