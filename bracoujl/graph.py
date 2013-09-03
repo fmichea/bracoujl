@@ -302,7 +302,7 @@ class Graph:
         blocks[_END_ADDR] = [end_block]
 
         ########################################################################
-        ##### STEP 2: We know split all calls and only put little boxes,   #####
+        ##### STEP 2: We now split all calls and only put little boxes,    #####
         #####         unmergeable, that will only contain the name of the  #####
         #####         functions.                                           #####
         ########################################################################
