@@ -68,8 +68,8 @@ class Link:
     def __repr__(self):
         return '[{:x}] {:{addr_frmt}} -> {:{addr_frmt}} [{:x}]'.format(
             self.from_,
-            self.from_.addr,
-            self.to.addr,
+            self.from_['pc'],
+            self.to['pc'],
             self.to,
             addr_frmt=ADDR_FRMT,
         )
