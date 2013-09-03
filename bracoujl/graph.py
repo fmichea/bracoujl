@@ -255,7 +255,8 @@ class Graph:
                     # If the block is the beginning of an interrupt, we don't
                     # need the link, but we do need to keep the triggering
                     # block in the backtrace.
-                    backtrace.append(block)
+                    block.block_type = BlockType.INT
+                    backtrace.append(last_block)
                     link = None
                 elif (last_block['ret'] in proc.CPU_CONF['ret_opcodes'] and
                       offset != proc.CPU_CONF['ret_opcodes_size']):
@@ -282,6 +283,8 @@ class Graph:
                                 # Offset is not the size of the opcode *and*
                                 # this is the first time it happens, we are on
                                 # the triggering link.
+                                if spec_op == 'call':
+                                    block.block_type = BlockType.SUB
                                 link.link_type = LinkType.TAKEN
                                 last_block.tlf = True
 
