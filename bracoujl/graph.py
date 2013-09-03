@@ -118,10 +118,6 @@ class Block:
     Links are stored in two attributes, `froms` and `tos`. There is a
     additional attribute that holds the information necessary to know if a
     branchement trigerred.
-
-    :param addr: Start addr of the block.
-    :param insts: The instructions contained in the block.
-    :param block_type: Type of the block.
     '''
 
     def __init__(self, inst, inst_class=Instruction):
