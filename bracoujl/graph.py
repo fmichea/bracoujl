@@ -129,10 +129,8 @@ class Block:
         self.froms, self.tos, self.tlf = Counter(), Counter(), False
 
     def __str__(self):
-        res = '{block_type}_{pc:{addr_frmt}}:\n'.format(
-            pc = self['pc'], block_type=self.block_type, addr_frmt=ADDR_FRMT,
-        )
-        res += '\n'.join(str(it) for it in self.insts)
+        res = '{name}:\n'.format(name=self.name())
+        res = '\n'.join(str(it) for it in self.insts)
         return res
 
     def __getitem__(self, item):
@@ -144,6 +142,11 @@ class Block:
         if len(self.insts) == 1 or item == 'pc':
             return self.insts[0][item]
         return super().__getitem__(item)
+
+    def name(self):
+        return '{block_type}_{pc:{addr_frmt}}'.format(
+            pc = self['pc'], block_type=self.block_type, addr_frmt=ADDR_FRMT,
+        )
 
     def accepts_merge_top(self):
         '''
