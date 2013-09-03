@@ -96,7 +96,7 @@ class Instruction:
         )
         if _DISASSEMBLER is not None:
             res += ' - {disassembly}'.format(
-                disassembly=_DISASSEMBLER.disassemble(opcode)
+                disassembly=_DISASSEMBLER.disassemble(self._inst)
             )
         return res
 
