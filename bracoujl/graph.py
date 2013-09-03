@@ -302,9 +302,64 @@ class Graph:
         blocks[_END_ADDR] = [end_block]
 
         ########################################################################
-        ##### STEP 2: Split sub functions when possible, and split         #####
-        #####         functions that are in different memories. Merge of   #####
-        #####         the blocks is done at the end of this step too.      #####
+        ##### STEP 2: We know split all calls and only put little boxes,   #####
+        #####         unmergeable, that will only contain the name of the  #####
+        #####         functions.                                           #####
         ########################################################################
-        for pc, blocks in sorted(blocks.items()):
-            pass
+        functions, keys = [], list(sorted(blocks.keys()))
+        for pc in keys:
+            for subblock in blocks[pc]:
+                # If we did interrupts correctly, we don't have any link that
+                # comes to it, we just need to put it in the function list.
+                if subblock.block_type == BlockType.INT:
+                    functions.append(subblock)
+
+                # We only care about subs from here.
+                if subblock.block_type != BlockType.SUB:
+                    continue
+
+                # For each link, if it's a call link (it is marked "taken"),
+                # then we remove this link and place a little box instead, to
+                # be able to split the functions' graphs in multiple files.
+                items = list(subblock.froms.items())
+                for from_, cnt in items:
+                    if from_.link_type != LinkType.TAKEN:
+                        continue
+                    call_str = 'Call to {}.'.format(subblock.name())
+                    call_block = SpecialBlock({'pc': subblock['pc'], call_str)
+                    link = Link(from_, call_block)
+                    for _ in range(cnt):
+                        link.do_link()
+                    del from_
+
+                # Finally, if this function is not part of another function, we
+                # can cut it from and put it in a separate file later, so we
+                # keep it in a list of functions.
+                if len(subblock.froms) == 0:
+                    functions.append(subblock)
+
+        ########################################################################
+        ##### STEP 3: Now we will merge all the blocks that can be merged  #####
+        #####         to remove useless links and make it ready.           #####
+        ########################################################################
+        keys = list(sorted(blocks.keys()))
+        for pc in keys:
+            for subblock in blocks[pc]:
+                # If this block cannot be merged on its bottom, we ignore it.
+                if not subblock.accepts_merge_bottom():
+                    continue
+
+                # We now know that we have only one link, we fetch it and check
+                # wether it accepts top merges.
+                to = list(subblock.tos.items())[0][0].to
+                if not to.accepts_merge_top():
+                    continue
+
+                # We know are sure we can merge this block, so we proceed and
+                # remove it from our block list.
+                blocks[to['pc']].remove(to)
+                subblock.merge(to)
+
+        # We did it! We now have a complete list of sub-functions and interrupts
+        # we can return, awesome!
+        return functions
