@@ -326,7 +326,7 @@ class Graph:
                     if from_.link_type != LinkType.TAKEN:
                         continue
                     call_str = 'Call to {}.'.format(subblock.name())
-                    call_block = SpecialBlock({'pc': subblock['pc'], call_str,
+                    call_block = SpecialBlock({'pc': subblock['pc']}, call_str,
                                               mergeable=False)
                     link = Link(from_, call_block)
                     for _ in range(cnt):

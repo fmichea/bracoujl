@@ -1,6 +1,7 @@
 # gb_z80.py - GameBoy z80 Disassembler + configuration.
 
 import struct
+import re
 
 class GBZ80Disassembler:
     def __init__(self):
@@ -197,9 +198,9 @@ class GBZ80Disassembler:
             return '[unknown: {!r}]'.format(inst['opcode'])
 
 _RGX = '.*'
-_RGX += 'PC: (?<pc>[A-Fa-f0-9]{4}) | '
-_RGX += 'OPCODE: (?<opcode>[0-9A-Fa-f]{2}) | '
-_RGX += 'MEM: (?<mem>[0-9A-Fa-f]{4})$'
+_RGX += 'PC: (?P<pc>[0-9A-Fa-f]{4}) | '
+_RGX += 'OPCODE: (?P<opcode>[0-9A-Fa-f]{2}) | '
+_RGX += 'MEM: (?P<mem>[0-9A-Fa-f]{4})$'
 _LOG_LINE = re.compile(_RGX)
 
 def _parse_line(line):
@@ -218,8 +219,8 @@ CPU_CONF = {
     'interrupts': range(0x0, 0x60 + 1, 0x8),
     'call_opcodes': [0xc4, 0xcc, 0xcd, 0xd4, 0xdc],
     'call_opcodes_size': 3,
-    'jump_opcodes': [0xc2, 0xc3, 0xca, 0xd2, 0xda, 0xe9] + \    # JMP
-                    [0x18, 0x20, 0x28, 0x30, 0x38],             # JR
+    'jump_opcodes': [0xc2, 0xc3, 0xca, 0xd2, 0xda, 0xe9] + \
+                    [0x18, 0x20, 0x28, 0x30, 0x38],             # JMP and JR
     'jump_opcodes_size': 3,
     'ret_opcodes': [0xc9, 0xd9, 0xC0, 0xc8, 0xd0, 0xd8],
     'ret_opcodes_size': 1,
