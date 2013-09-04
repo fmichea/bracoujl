@@ -3,72 +3,74 @@
 import struct
 import re
 
+from functools import partial as P
+
 class GBZ80Disassembler:
     def __init__(self):
         def _disassemble_cb(op):
             return self._cb_ops[op / 8] + self._cb_regs[op % 8]
         def r(reg): return '%{reg}'.format(reg=reg)
-        def inc_reg(reg):
+        def inc_reg(reg, _):
             return 'inc {reg}'.format(reg=reg)
-        def dec_reg(reg):
+        def dec_reg(reg, _):
             return 'dec {reg}'.format(reg=reg)
-        def push_reg(reg):
+        def push_reg(reg, _):
             return 'push {reg}'.format(reg=reg)
-        def pop_reg(reg):
+        def pop_reg(reg, _):
             return 'pop {reg}'.format(reg=reg)
-        def ld_a_mreg(reg):
+        def ld_a_mreg(reg, _):
             return 'ld %a, ({})'.format(reg)
-        def ld_mreg_a(reg):
-            return 'ld ({}), %a'
+        def ld_mreg_a(reg, _):
+            return 'ld ({}), %a'.format(reg)
         def call_flag_a16(flag, inst):
-            addr = struct.unpack('<H', inst['mem'])
+            addr = struct.unpack('<H', inst['mem'])[0]
             return 'call {}, $0x{:04X}'.format(flag, addr)
         def jmp_flag_a16(flag, inst):
-            addr = struct.unpack('<H', inst['mem'])
+            addr = struct.unpack('<H', inst['mem'])[0]
             return 'jmp {}, $0x{:04X}'.format(flag, addr)
         def jr_flag_r8(flag, inst):
-            addr = struct.unpack('b', inst['mem'][:1])
+            addr = struct.unpack('b', inst['mem'][:1])[0]
             return 'jr {}, $0x{:02X} ; (${:d})'.format(flag, addr & 0xff, addr)
-        def ret_flag(flag):
-            return 'ret {}'
-        def ld_reg_reg(reg1, reg2):
+        def ret_flag(flag, _):
+            return 'ret {}'.format(flag)
+        def ld_reg_reg(reg1, reg2, _):
             return 'ld {reg1}, {reg2}'.format(reg1=reg1, reg2=reg2)
-        def op_a_reg(op, reg):
-            return '{} %a, {}'
-        def rst_nn(nn):
+        def op_a_reg(op, reg, _):
+            return '{} %a, {}'.format(op, reg)
+        def rst_nn(nn, _):
             return 'rst {02X}h'.format(nn)
         def jmp_a16(inst):
-            addr = struct.unpack('<H', inst['mem'])
+            addr = struct.unpack('<H', inst['mem'])[0]
             return 'jmp $0x{:04X}'.format(addr)
-        def ld_mc_a():
+        def ld_mc_a(_):
             return 'ld ($0xFFF0 + %c), %a'
-        def ld_a_mc():
+        def ld_a_mc(_):
             return 'ld %a, ($0xFFF0 + %c)'
         def cb(inst):
             op = inst['mem'][0]
             return 'cb $0x{:02X} ; {}'.format(op, _disassemble_cb(op))
         def call_a16(inst):
-            addr = struct.unpack('<H', inst['mem'])
+            addr = struct.unpack('<H', inst['mem'])[0]
             return 'call $0x{:04X}'.format(addr)
         def jr_r8(inst):
-            addr = struct.unpack('b', inst['mem'][:1])
+            addr = struct.unpack('b', inst['mem'][:1])[0]
             return 'jr $0x{:02X} ; (${:d})'.format(addr & 0xff, addr)
         def ld_ma16_sp(inst):
-            addr = struct.unpack('<H', inst['mem'])
+            addr = struct.unpack('<H', inst['mem'])[0]
             return 'ld ($0x{:04X}), %sp'.format(addr)
         def ld_reg_d8(reg, inst):
-            val = struct.unpack('b', inst['mem'][:1])
+            val = struct.unpack('b', inst['mem'][:1])[0]
             return 'ld {}, $0x{:02X}'.format(reg, val)
         def ld_reg_d16(reg, inst):
-            val = struct.unpack('<H', inst['mem'])
+            val = struct.unpack('<H', inst['mem'])[0]
             return 'ld {}, $0x{:04X}'.format(reg, val)
-        def add_hl_reg():
+        def add_hl_reg(reg, _):
             return 'add %hl, {}'.format(reg)
         def ld_ma16_a(inst):
-            addr = struct.unpack('<H', inst['mem'])
+            addr = struct.unpack('<H', inst['mem'])[0]
             return 'ld ($0x{:04X}), %a'.format(addr)
         def ld_a_ma16(inst):
-            addr = struct.unpack('<H', inst['mem'])
+            addr = struct.unpack('<H', inst['mem'])[0]
             return 'ld %a, ($0x{:04X})'.format(addr)
         def ldh_a_ma8(inst):
             addr = inst['mem'][0]
@@ -81,14 +83,14 @@ class GBZ80Disassembler:
             d8 = inst['mem'][0]
             return '{} %a, $0x{}'.format(op, d8)
         def add_sp_r8(inst):
-            r8 = struct.unpack('b', inst['mem'][:1])
+            r8 = struct.unpack('b', inst['mem'][:1])[0]
             return 'add %sp, $0x{:02X} ; (${:d})'.format(r8 & 0xff, r8)
         def ld_hl_sppr8(inst):
-            a = struct.unpack('b', inst['mem'][1:])
+            a = struct.unpack('b', inst['mem'][1:])[0]
             return 'ld %hl, %sp + $0x{:02X} ; (${:d})'.format(a & 0xff, a)
-        def ld_sp_hl():
+        def ld_sp_hl(_):
             return 'ld %sp, %hl'
-        def jmp_mhl():
+        def jmp_mhl(_):
             return 'jmp (%hl)'
 
         self._opcodes = dict()
@@ -99,103 +101,102 @@ class GBZ80Disassembler:
         for o in ["bit", "res", "set"]:
             for i in range(8):
                 self._cb_ops.append(o + " " + str(i) + ",")
-        self._opcodes[0xCB] = lambda inst: cb(inst)
+        self._opcodes[0xCB] = cb
 
         # LD (a16), SP
-        self._opcodes[0x08] = lambda inst: ld_ma16_sp(inst)
+        self._opcodes[0x08] = ld_ma16_sp
 
         # LDH (a8), A / LDH A, (a8)
-        self._opcodes[0xE0] = lambda inst: ldh_ma8_a(inst)
-        self._opcodes[0xF0] = lambda inst: ldh_a_ma8(inst)
+        self._opcodes[0xE0] = ldh_ma8_a
+        self._opcodes[0xF0] = ldh_a_ma8
 
         # LD (a16), A / LD A, (a16)
-        self._opcodes[0xEA] = lambda inst: ld_ma16_a(inst)
-        self._opcodes[0xFA] = lambda inst: ld_a_ma16(inst)
+        self._opcodes[0xEA] = ld_ma16_a
+        self._opcodes[0xFA] = ld_a_ma16
 
         # LD SP, HL / LD HL, SP + r8
-        self._opcodes[0xF9] = lambda _: ld_sp_hl()
-        self._opcodes[0xF8] = lambda inst: ld_hl_sppr8(inst)
+        self._opcodes[0xF9] = ld_sp_hl
+        self._opcodes[0xF8] = ld_hl_sppr8
 
         # ADD SP, r8
-        self._opcodes[0xE8] = lambda inst: add_sp_r8(inst)
+        self._opcodes[0xE8] = add_sp_r8
 
         # JP (HL)
-        self._opcodes[0xE9] = lambda _: jmp_mhl()
+        self._opcodes[0xE9] = jmp_mhl
 
         for i, reg in enumerate(['bc', 'de', 'hl']):
             # INC
-            self._opcodes[0x10 * i + 0x3] = lambda _: inc_reg(r(reg))
-            self._opcodes[0x10 * i + 0x4] = lambda _: inc_reg(r(reg[0]))
-            self._opcodes[0x10 * i + 0xC] = lambda _: inc_reg(r(reg[1]))
+            self._opcodes[0x10 * i + 0x3] = P(inc_reg, r(reg))
+            self._opcodes[0x10 * i + 0x4] = P(inc_reg, r(reg[0]))
+            self._opcodes[0x10 * i + 0xC] = P(inc_reg, r(reg[1]))
             # DEC
-            self._opcodes[0x10 * i + 0x5] = lambda _: dec_reg(r(reg[0]))
-            self._opcodes[0x10 * i + 0xB] = lambda _: dec_reg(r(reg))
-            self._opcodes[0x10 * i + 0xD] = lambda _: dec_reg(r(reg[1]))
+            self._opcodes[0x10 * i + 0x5] = P(dec_reg, r(reg[0]))
+            self._opcodes[0x10 * i + 0xB] = P(dec_reg, r(reg))
+            self._opcodes[0x10 * i + 0xD] = P(dec_reg, r(reg[1]))
         # INC
-        self._opcodes[0x33] = lambda _: inc_reg('%sp')
-        self._opcodes[0x34] = lambda _: inc_reg('(%hl)')
-        self._opcodes[0x3C] = lambda _: inc_reg(r('a'))
+        self._opcodes[0x33] = P(inc_reg, '%sp')
+        self._opcodes[0x34] = P(inc_reg, '(%hl)')
+        self._opcodes[0x3C] = P(inc_reg, r('a'))
         # DEC
-        self._opcodes[0x35] = lambda _: dec_reg('(%hl)')
-        self._opcodes[0x3B] = lambda _: dec_reg('%sp')
-        self._opcodes[0x3D] = lambda _: dec_reg(r('a'))
+        self._opcodes[0x35] = P(dec_reg, '(%hl)')
+        self._opcodes[0x3B] = P(dec_reg, '%sp')
+        self._opcodes[0x3D] = P(dec_reg, r('a'))
 
         # PUSH/POP
         for i, reg in enumerate(['bc', 'de', 'hl', 'af']):
-            self._opcodes[0xC0 + 0x10 * i + 0x1] = lambda _: pop_reg(r(reg))
-            self._opcodes[0xC0 + 0x10 * i + 0x5] = lambda _: push_reg(r(reg))
+            self._opcodes[0xC0 + 0x10 * i + 0x1] = P(pop_reg, r(reg))
+            self._opcodes[0xC0 + 0x10 * i + 0x5] = P(push_reg, r(reg))
 
         # ADD/ADC/SUB/SBC/AND/XOR/OR/CP
         for i1, op in enumerate(['add', 'adc', 'sub', 'sbc', 'and', 'xor', 'or', 'cp']):
             for i2, reg in enumerate([r(a) for a in 'bcdehl'] + ['(%hl)', r('a')]):
-                self._opcodes[0x80 + 0x8 * i1 + i2] = lambda _: op_a_reg(op, reg)
-            self._opcodes[0xC6 + 0x8 * i1] = lambda inst: op_a_d8(op, inst)
+                self._opcodes[0x80 + 0x8 * i1 + i2] = P(op_a_reg, op, reg)
+            self._opcodes[0xC6 + 0x8 * i1] = P(op_a_d8, op)
 
         # LD REG, d16
         for i, reg in enumerate(['bc', 'de', 'hl', 'sp']):
-            self._opcodes[0x10 * i + 0x1] = lambda inst: ld_reg_d16(r(reg), inst)
+            self._opcodes[0x10 * i + 0x1] = P(ld_reg_d16, r(reg))
 
         # ADD HL, REG
         for i, reg in enumerate(['bc', 'de', 'hl', 'sp']):
-            self._opcodes[0x09 + 0x10 * i] = lambda _: add_hl_reg(r(reg))
+            self._opcodes[0x09 + 0x10 * i] = P(add_hl_reg, r(reg))
 
         # LD REG, REG / LD REG, d8
         for i1, reg1 in enumerate([r(a) for a in 'bcdehl'] + ['(%hl)', r('a')]):
             for i2, reg2 in enumerate([r(a) for a in 'bcdehl'] + ['(%hl)', r('a')]):
-                self._opcodes[0x40 + 0x8 * i1 + i2] = lambda _: ld_reg_reg(reg1, reg2)
-            self._opcodes[0x06 + 0x08 * i1] = lambda inst: ld_reg_d8(reg, inst)
+                self._opcodes[0x40 + 0x8 * i1 + i2] = P(ld_reg_reg, reg1, reg2)
+            self._opcodes[0x06 + 0x08 * i1] = P(ld_reg_d8, reg)
 
         # LD A, (REG)
         for i, reg in enumerate(['bc', 'de', 'hl+', 'hl-']):
-            self._opcodes[0x10 * i + 0x2] = lambda _: ld_mreg_a(r(reg))
-            self._opcodes[0x10 * i + 0xA] = lambda _: ld_a_mreg(r(reg))
+            self._opcodes[0x10 * i + 0x2] = P(ld_mreg_a, r(reg))
+            self._opcodes[0x10 * i + 0xA] = P(ld_a_mreg, r(reg))
 
         # LD A, (C) / LD (C), A
-        self._opcodes[0xE2] = lambda _: ld_mc_a()
-        self._opcodes[0xF2] = lambda _: ld_a_mc()
+        self._opcodes[0xE2] = ld_mc_a
+        self._opcodes[0xF2] = ld_a_mc
 
         # RST
         for i in range(0x00, 0x40, 0x8):
-            self._opcodes[0xC7 + i] = lambda _: rst_nn(i)
+            self._opcodes[0xC7 + i] = P(rst_nn, i)
 
         # CALL, JMP, JR
-        self._opcodes[0x18] = lambda inst: jr_r8(inst)
-        self._opcodes[0xC3] = lambda inst: jmp_a16(inst)
-        self._opcodes[0xCD] = lambda inst: call_a16(inst)
+        self._opcodes[0x18] = jr_r8
+        self._opcodes[0xC3] = jmp_a16
+        self._opcodes[0xCD] = call_a16
         for i, flag in enumerate(['nzf', 'zf', 'ncy', 'cy']):
-            self._opcodes[0xC0 + 0x8 * i] = lambda _: ret_flag(flag)
-            self._opcodes[0x20 + 0x8 * i] = lambda inst: jr_flag_r8(flag, inst)
-            self._opcodes[0xC2 + 0x8 * i] = lambda inst: jmp_flag_a16(flag, inst)
-            self._opcodes[0xC2 + 0x8 * i + 0x2] = lambda inst: call_flag_a16(flag, inst)
+            self._opcodes[0xC0 + 0x8 * i] = P(ret_flag, flag)
+            self._opcodes[0x20 + 0x8 * i] = P(jr_flag_r8, flag)
+            self._opcodes[0xC2 + 0x8 * i] = P(jmp_flag_a16, flag)
+            self._opcodes[0xC2 + 0x8 * i + 0x2] = P(call_flag_a16, flag)
 
         # Simple ops
-        lbf = lambda op: (lambda _: op) # late binding fix
         for addr, op in [(0x00, 'nop'), (0x10, 'stop'), (0xFB, 'ei'),
                          (0xF3, 'di'), (0x76, 'halt'), (0xC9, 'ret'),
                          (0xD9, 'reti')]:
-            self._opcodes[addr] = lbf(op)
+            self._opcodes[addr] = P(lambda x, _: x, op)
         for i, op in enumerate(['rlca', 'rrca', 'rla', 'rra', 'daa', 'cpl', 'scf', 'ccf']):
-            self._opcodes[0x07 + 0x08 * i] = lbf(op)
+            self._opcodes[0x07 + 0x08 * i] = P(lambda x, _: x, op)
 
     def disassemble(self, inst):
         try:
