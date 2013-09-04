@@ -269,7 +269,7 @@ class Graph:
                     block.block_type = BlockType.INT
                     backtrace.append(last_block)
                     link = None
-                elif (last_block['ret'] in proc.CPU_CONF['ret_opcodes'] and
+                elif (last_block['opcode'] in proc.CPU_CONF['ret_opcodes'] and
                       offset != proc.CPU_CONF['ret_opcodes_size']):
                     # We a ret, and triggered it. A ret trigger happens when
                     # we don't fall-through. In that case, we traceback to the
