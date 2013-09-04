@@ -338,6 +338,10 @@ class Graph:
                 # keep it in a list of functions.
                 if len(subblock.froms) == 0:
                     functions.append(subblock)
+                else:
+                    print('Function {} is within another function.'.format(
+                        subblock.name()
+                    ))
 
         ########################################################################
         ##### STEP 3: Now we will merge all the blocks that can be merged  #####
