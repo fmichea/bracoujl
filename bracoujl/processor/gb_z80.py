@@ -204,8 +204,8 @@ class GBZ80Disassembler:
             return '[unknown: {!r}]'.format(inst['opcode'])
 
 _RGX = '.*'
-_RGX += 'PC: (?P<pc>[0-9A-Fa-f]{4}) | '
-_RGX += 'OPCODE: (?P<opcode>[0-9A-Fa-f]{2}) | '
+_RGX += 'PC: (?P<pc>[0-9A-Fa-f]{4}) \\| '
+_RGX += 'OPCODE: (?P<opcode>[0-9A-Fa-f]{2}) \\| '
 _RGX += 'MEM: (?P<mem>[0-9A-Fa-f]{4})$'
 _LOG_LINE = re.compile(_RGX)
 
