@@ -164,7 +164,7 @@ class Block:
         that we don't go to multiple blocks, or that we are not part of the
         special opcodes (call, jump, ret).
         '''
-        if len(self._tos) != 1:
+        if len(self.tos) != 1:
             return False
         for spec_opc in ['ret', 'call', 'jump']:
             if self.insts[-1]['opcode'] in proc.CPU_CONF[spec_opc + '_opcodes']:
