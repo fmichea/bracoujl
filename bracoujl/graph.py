@@ -77,6 +77,9 @@ class Link:
     def __eq__(self, other):
         return repr(self) == repr(other)
 
+    def __hash__(self):
+        return hash(repr(self))
+
 
 class Instruction:
     '''
