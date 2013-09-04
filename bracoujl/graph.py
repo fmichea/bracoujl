@@ -282,7 +282,7 @@ class Graph:
                         sys.exit(msg)
                     link = find_link(last_block, block)
                 else:
-                    for spec_op in ['call', 'jmp']:
+                    for spec_op in ['call', 'jump']:
                         spec_op += '_opcodes'
                         if last_block['opcode'] in proc.CPU_CONF[spec_op]:
                             # Links are colorized depending on the detection of
