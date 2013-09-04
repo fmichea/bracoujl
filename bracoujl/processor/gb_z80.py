@@ -6,7 +6,7 @@ import re
 class GBZ80Disassembler:
     def __init__(self):
         def _disassemble_cb(op):
-            return 'TODO'
+            return self._cb_ops[op / 8] + self._cb_regs[op % 8]
         def r(reg): return '%{reg}'.format(reg=reg)
         def inc_reg(reg):
             return 'inc {reg}'.format(reg=reg)
@@ -94,6 +94,11 @@ class GBZ80Disassembler:
         self._opcodes = dict()
 
         # PREFIX CB
+        self._cb_regs = ["b", "c", "d", "e", "h", "l", "(hl)", "a"]
+        self._cb_ops = ["rlc", "rrc", "rl", "rr", "sla", "sra", "swap", "srl"]
+        for o in ["bit", "res", "set"]:
+            for i in range(8):
+                self._cb_ops.append(o + " " + str(i) + ",")
         self._opcodes[0xCB] = lambda inst: cb(inst)
 
         # LD (a16), SP
