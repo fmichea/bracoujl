@@ -146,7 +146,7 @@ class Block:
 
     def name(self):
         return '{block_type}_{pc:{addr_frmt}}'.format(
-            pc = self['pc'], block_type=self.block_type, addr_frmt=ADDR_FRMT,
+            pc = self['pc'], block_type=self.block_type, addr_frmt=_ADDR_FRMT,
         )
 
     def accepts_merge_top(self):
