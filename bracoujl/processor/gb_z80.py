@@ -218,17 +218,19 @@ def _parse_line(line):
         return {'pc': pc, 'opcode': opcode, 'mem': mem}
     return None
 
+def chrlst(lst): return [chr(c) for c in lst]
+
 CPU_CONF = {
     'parse_line': _parse_line,
     'addr_width': 16,
     'opcode_size': 3,
     'interrupts': range(0x0, 0x60 + 1, 0x8),
-    'call_opcodes': [0xc4, 0xcc, 0xcd, 0xd4, 0xdc],
+    'call_opcodes': chrlst([0xc4, 0xcc, 0xcd, 0xd4, 0xdc]),
     'call_opcodes_size': 3,
-    'jump_opcodes': [0xc2, 0xc3, 0xca, 0xd2, 0xda, 0xe9] + \
-                    [0x18, 0x20, 0x28, 0x30, 0x38],             # JMP and JR
-    'jump_opcodes_size': 3,
-    'ret_opcodes': [0xc9, 0xd9, 0xC0, 0xc8, 0xd0, 0xd8],
+    'jmp_opcodes': chrlst([0xc2, 0xc3, 0xca, 0xd2, 0xda, 0xe9] + \
+                           [0x18, 0x20, 0x28, 0x30, 0x38]),         # JMP and JR
+    'jmp_opcodes_size': 3,
+    'ret_opcodes': chrlst([0xc9, 0xd9, 0xC0, 0xc8, 0xd0, 0xd8]),
     'ret_opcodes_size': 1,
     'disassembler': GBZ80Disassembler,
 }
