@@ -196,6 +196,12 @@ class SpecialBlock(Block):
                     padding = ''.ljust(_ADDR_SIZE),
                     label = label,
                 )
+            def __getitem__(self, item):
+                if item in ['pc', 'opcode', 'mem']:
+                    if item in self._inst:
+                        return super().__getitem__(item)
+                    return None
+                return super().__getitem__(item)
         super().__init__(inst, inst_class=SpecialInstruction)
         self._mergeable = mergeable
 
