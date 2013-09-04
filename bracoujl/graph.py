@@ -2,6 +2,7 @@
 # Author: Franck Michea < franck.michea@gmail.com >
 # License: New BSD License (See LICENSE)
 
+import binascii
 import os
 import pickle
 import sys
@@ -92,10 +93,10 @@ class Instruction:
         self._inst = inst
 
     def __str__(self):
-        res = '    {addr:{addr_frmt}}: {opcode:02X}'.format(
-            addr = self['addr'],
-            opcode = self['opcode'],
-            addr_frmt=ADDR_FRMT,
+        res = '    {addr:{addr_frmt}}: {opcode}'.format(
+            addr = self['pc'],
+            opcode = binascii.hexlify(self['opcode']).decode('utf-8'),
+            addr_frmt=_ADDR_FRMT,
         )
         if _DISASSEMBLER is not None:
             res += ' - {disassembly}'.format(
