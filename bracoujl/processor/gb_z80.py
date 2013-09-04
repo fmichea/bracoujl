@@ -189,12 +189,13 @@ class GBZ80Disassembler:
             self._opcodes[0xC2 + 0x8 * i + 0x2] = lambda inst: call_flag_a16(flag, inst)
 
         # Simple ops
+        lbf = lambda op: (lambda _: op) # late binding fix
         for addr, op in [(0x00, 'nop'), (0x10, 'stop'), (0xFB, 'ei'),
                          (0xF3, 'di'), (0x76, 'halt'), (0xC9, 'ret'),
                          (0xD9, 'reti')]:
-            self._opcodes[addr] = lambda _: op
+            self._opcodes[addr] = lbf(op)
         for i, op in enumerate(['rlca', 'rrca', 'rla', 'rra', 'daa', 'cpl', 'scf', 'ccf']):
-            self._opcodes[0x07 + 0x08 * i] = lambda _: op
+            self._opcodes[0x07 + 0x08 * i] = lbf(op)
 
     def disassemble(self, inst):
         try:
