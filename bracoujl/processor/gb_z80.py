@@ -203,6 +203,8 @@ class GBZ80Disassembler:
             return self._opcodes[inst['opcode'][0]](inst)
         except KeyError:
             return '[unknown: {!r}]'.format(inst['opcode'])
+        except Exception as e:
+            return '[error: {!r} -> {}]'.format(inst['opcode'], str(e))
 
 _RGX = '.*'
 _RGX += 'PC: (?P<pc>[0-9A-Fa-f]{4}) \\| '
