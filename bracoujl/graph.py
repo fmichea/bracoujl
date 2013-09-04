@@ -249,7 +249,7 @@ class Graph:
                         break
                 if not block_found:
                     block = Block(inst)
-                    blocks.append(block)
+                    blocks[block['pc']].append(block)
 
                 # Now we need to link this block and the last block.
                 link = find_link(last_block, block)
