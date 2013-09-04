@@ -106,7 +106,8 @@ class Instruction:
 
     def __getitem__(self, item):
         if item not in ['pc', 'opcode', 'mem']:
-            return super().__getitem__(item)
+            raise KeyError(item)
+            #return super().__getitem__(item)
         return self._inst[item]
 
     def __eq__(self, other):
