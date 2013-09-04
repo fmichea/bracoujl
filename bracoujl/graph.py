@@ -207,7 +207,7 @@ class SpecialBlock(Block):
 
 
 class Graph:
-    def generate_graph(filename):
+    def generate_graph(self, filename):
         def find_link(last_block, block):
             link = Link(last_block, block)
             for ll in last_block.tos:
