@@ -8,7 +8,7 @@ from functools import partial as P
 class GBZ80Disassembler:
     def __init__(self):
         def _disassemble_cb(op):
-            return self._cb_ops[op / 8] + self._cb_regs[op % 8]
+            return self._cb_ops[op // 8] + self._cb_regs[op % 8]
         def r(reg): return '%{reg}'.format(reg=reg)
         def inc_reg(reg, _):
             return 'inc {reg}'.format(reg=reg)
