@@ -69,7 +69,7 @@ class Link:
         if not self.to.froms[self]:
             del self.to.froms[self]
 
-    def __del__(self):
+    def unlink_all(self):
         del self.from_.tos[self]
         del self.to.froms[self]
 
@@ -343,7 +343,7 @@ class Graph:
                     link = Link(from_, call_block)
                     for _ in range(cnt):
                         link.do_link()
-                    del from_
+                    from_.unlink_all()
 
                 # Finally, if this function is not part of another function, we
                 # can cut it from and put it in a separate file later, so we
