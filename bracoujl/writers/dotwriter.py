@@ -4,50 +4,35 @@
 
 import sys
 
-class DotWriter(object):
-    def __init__(self, output_file = None):
-        if output_file is None:
-            self.f = sys.stdout
-        else:
-            self.f = open(output_file, 'w')
+class DotWriter:
+    def generate_graph(self, output_file, function):
+        output_file.write('digraph {name} {{\n'.format(name=function.uniq_name()))
+        output_file.write('\tsplines = true;\n')
+        output_file.write('\tnode [ shape = box, fontname = "Deja Vu Sans Mono" ];\n\n')
 
-        self.f.write('digraph bracoujl {\n')
-        self.f.write('\tsplines = true;\n')
-        self.f.write('\tnode [ shape = box, fontname = "Deja Vu Sans Mono" ];\n\n')
-
-    def __del__(self):
-        self.f.write('}\n')
-        self.f.close()
-
-    def generate_subgraph(self, subgraph):
-        self.f.write('\tsubgraph {subgraph_name} {{\n'.format(
-            subgraph_name = subgraph.name(),
-        ))
-        addrs = sorted(subgraph.blocks.keys())
-        for addr in addrs:
-            block = subgraph.blocks[addr]
-            self.f.write('\t\t{block_name} [ label = "{code}\\l" ];\n'.format(
-                block_name = block.node_name(),
+        blocks, blocks_done = [function], []
+        while blocks:
+            block = blocks.pop()
+            if block in blocks_done:
+                continue
+            output_file.write('\t\t{block_name} [ label = "{code}\\l" ];\n'.format(
+                block_name = block.uniq_name(),
                 code = str(block).replace('\n', '\\l').replace('\t', ' ' * 4)
             ))
-        self.f.write('\n')
-        for link in list(subgraph.links):
-            self.f.write('\t\t{}\n'.format(self.generate_link(link)))
-        self.f.write('\t}\n')
 
-    def generate_link(self, link):
+            for link in block.tos.keys():
+                output_file.write('\t\t{}\n'.format(self._generate_link(link)))
+                blocks.append(link.to)
+            output_file.write('\n')
+            blocks_done.append(block)
+
+        output_file.write('}\n')
+
+    def _generate_link(self, link):
         return '{block1} -> {block2} [ {options} ];'.format(
-            block1 = link._from.node_name(),
-            block2 = link.to.node_name(),
+            block1 = link.from_.uniq_name(),
+            block2 = link.to.uniq_name(),
             options = 'color = {color}, tailport = s, headport = n'.format(
-                color = link.type,
+                color = link.link_type,
             )
         )
-
-    def generate(self, graph):
-        for subgraph in graph.graphs:
-            self.generate_subgraph(subgraph)
-        for name, interrupt in graph.interrupts.items():
-            self.generate_subgraph(interrupt)
-        for link in graph.graph_links:
-            self.f.write('\t{}\n'.format(self.generate_link(link)))
