@@ -21,8 +21,8 @@ _ADDR_FRMT = '0{}X'.format(_ADDR_SIZE)
 _DISASSEMBLER = proc.CPU_CONF.get('disassembler', type(None))()
 
 # These two will not be displayed.
-_BEGIN_ADDR = -1
-_END_ADDR   = -2
+_BEGIN_ADDR = 0x10000
+_END_ADDR   = 0x10001
 
 def _enum(**enums):
     return type('Enum', (), enums)
