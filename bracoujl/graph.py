@@ -27,7 +27,7 @@ _END_ADDR   = 0x10001
 def _enum(**enums):
     return type('Enum', (), enums)
 
-LinkType    = _enum(NORMAL='black', TAKEN='green', NOT_TAKEN='red')
+LinkType    = _enum(NORMAL='black', TAKEN='green', CALL_TAKEN='blue', NOT_TAKEN='red')
 BlockType   = _enum(INT='int', LOC='loc', SUB='sub')
 GraphState  = _enum(NORMAL_GRAPH=0, INTERRUPT=1)
 
@@ -285,8 +285,10 @@ class Graph:
                                 # the triggering link.
                                 if spec_op == 'call_opcodes':
                                     block.block_type = BlockType.SUB
+                                    link.link_type = LinkType.CALL_TAKEN
                                     backtrace.append(last_block)
-                                link.link_type = LinkType.TAKEN
+                                else:
+                                    link.link_type = LinkType.TAKEN
                                 last_block.tlf = True
 
                 # We finally really link the Link if it still exists and was not
@@ -324,12 +326,13 @@ class Graph:
                 # be able to split the functions' graphs in multiple files.
                 items = list(subblock.froms.items())
                 for from_, cnt in items:
-                    if from_.link_type != LinkType.TAKEN:
+                    if from_.link_type != LinkType.CALL_TAKEN:
                         continue
                     call_str = 'Call to {}.'.format(subblock.name())
                     call_block = SpecialBlock({'pc': subblock['pc']}, call_str,
                                               mergeable=False)
-                    link = Link(from_, call_block)
+                    link = Link(from_.from_, call_block)
+                    link.link_type = LinkType.CALL_TAKEN
                     for _ in range(cnt):
                         link.do_link()
                     from_.unlink_all()
