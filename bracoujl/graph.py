@@ -272,11 +272,11 @@ class Graph:
                     # place where we were called.
                     try:
                         last_block = backtrace.pop()
+                        link = find_link(last_block, block)
                     except IndexError:
                         msg = 'Could not pop call place from the which we come'
                         msg += ' from.'
-                        sys.exit(msg)
-                    link = find_link(last_block, block)
+                        #print(msg, file=sys.stderr, flush=True)
                 else:
                     for spec_op in ['call', 'jump']:
                         spec_op += '_opcodes'
