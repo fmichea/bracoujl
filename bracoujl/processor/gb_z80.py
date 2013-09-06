@@ -10,18 +10,24 @@ class GBZ80Disassembler:
         def _disassemble_cb(op):
             return self._cb_ops[op // 8] + self._cb_regs[op % 8]
         def r(reg): return '%{reg}'.format(reg=reg)
-        def inc_reg(reg, _):
-            return 'inc {reg}'.format(reg=reg)
-        def dec_reg(reg, _):
-            return 'dec {reg}'.format(reg=reg)
-        def push_reg(reg, _):
-            return 'push {reg}'.format(reg=reg)
-        def pop_reg(reg, _):
-            return 'pop {reg}'.format(reg=reg)
-        def ld_a_mreg(reg, _):
-            return 'ld %a, ({})'.format(reg)
-        def ld_mreg_a(reg, _):
-            return 'ld ({}), %a'.format(reg)
+        def inc_reg(reg):
+            a = 'inc {reg}'.format(reg=reg)
+            return lambda _: a
+        def dec_reg(reg):
+            a = 'dec {reg}'.format(reg=reg)
+            return lambda _: a
+        def push_reg(reg):
+            a = 'push {reg}'.format(reg=reg)
+            return lambda _: a
+        def pop_reg(reg):
+            a = 'pop {reg}'.format(reg=reg)
+            return lambda _: a
+        def ld_a_mreg(reg):
+            a = 'ld %a, ({})'.format(reg)
+            return lambda _: a
+        def ld_mreg_a(reg):
+            a = 'ld ({}), %a'.format(reg)
+            return lambda _: a
         def call_flag_a16(flag, inst):
             addr = struct.unpack('<H', inst['mem'])[0]
             return 'call {}, $0x{:04X}'.format(flag, addr)
@@ -31,14 +37,18 @@ class GBZ80Disassembler:
         def jr_flag_r8(flag, inst):
             addr = struct.unpack('b', inst['mem'][:1])[0]
             return 'jr {}, $0x{:02X} ; (${:d})'.format(flag, addr & 0xff, addr)
-        def ret_flag(flag, _):
-            return 'ret {}'.format(flag)
-        def ld_reg_reg(reg1, reg2, _):
-            return 'ld {reg1}, {reg2}'.format(reg1=reg1, reg2=reg2)
-        def op_a_reg(op, reg, _):
-            return '{} %a, {}'.format(op, reg)
-        def rst_nn(nn, _):
-            return 'rst {02X}h'.format(nn)
+        def ret_flag(flag):
+            a = 'ret {}'.format(flag)
+            return lambda _: a
+        def ld_reg_reg(reg1, reg2):
+            a = 'ld {reg1}, {reg2}'.format(reg1=reg1, reg2=reg2)
+            return lambda _: a
+        def op_a_reg(op, reg):
+            a = '{} %a, {}'.format(op, reg)
+            return lambda _: a
+        def rst_nn(nn):
+            a = 'rst {:02X}h'.format(nn)
+            return lambda _: a
         def jmp_a16(inst):
             addr = struct.unpack('<H', inst['mem'])[0]
             return 'jmp $0x{:04X}'.format(addr)
@@ -64,8 +74,9 @@ class GBZ80Disassembler:
         def ld_reg_d16(reg, inst):
             val = struct.unpack('<H', inst['mem'])[0]
             return 'ld {}, $0x{:04X}'.format(reg, val)
-        def add_hl_reg(reg, _):
-            return 'add %hl, {}'.format(reg)
+        def add_hl_reg(reg):
+            a = 'add %hl, {}'.format(reg)
+            return lambda _: a
         def ld_ma16_a(inst):
             addr = struct.unpack('<H', inst['mem'])[0]
             return 'ld ($0x{:04X}), %a'.format(addr)
@@ -126,31 +137,31 @@ class GBZ80Disassembler:
 
         for i, reg in enumerate(['bc', 'de', 'hl']):
             # INC
-            self._opcodes[0x10 * i + 0x3] = P(inc_reg, r(reg))
-            self._opcodes[0x10 * i + 0x4] = P(inc_reg, r(reg[0]))
-            self._opcodes[0x10 * i + 0xC] = P(inc_reg, r(reg[1]))
+            self._opcodes[0x10 * i + 0x3] = inc_reg(r(reg))
+            self._opcodes[0x10 * i + 0x4] = inc_reg(r(reg[0]))
+            self._opcodes[0x10 * i + 0xC] = inc_reg(r(reg[1]))
             # DEC
-            self._opcodes[0x10 * i + 0x5] = P(dec_reg, r(reg[0]))
-            self._opcodes[0x10 * i + 0xB] = P(dec_reg, r(reg))
-            self._opcodes[0x10 * i + 0xD] = P(dec_reg, r(reg[1]))
+            self._opcodes[0x10 * i + 0x5] = dec_reg(r(reg[0]))
+            self._opcodes[0x10 * i + 0xB] = dec_reg(r(reg))
+            self._opcodes[0x10 * i + 0xD] = dec_reg(r(reg[1]))
         # INC
-        self._opcodes[0x33] = P(inc_reg, '%sp')
-        self._opcodes[0x34] = P(inc_reg, '(%hl)')
-        self._opcodes[0x3C] = P(inc_reg, r('a'))
+        self._opcodes[0x33] = inc_reg('%sp')
+        self._opcodes[0x34] = inc_reg('(%hl)')
+        self._opcodes[0x3C] = inc_reg(r('a'))
         # DEC
-        self._opcodes[0x35] = P(dec_reg, '(%hl)')
-        self._opcodes[0x3B] = P(dec_reg, '%sp')
-        self._opcodes[0x3D] = P(dec_reg, r('a'))
+        self._opcodes[0x35] = dec_reg('(%hl)')
+        self._opcodes[0x3B] = dec_reg('%sp')
+        self._opcodes[0x3D] = dec_reg(r('a'))
 
         # PUSH/POP
         for i, reg in enumerate(['bc', 'de', 'hl', 'af']):
-            self._opcodes[0xC0 + 0x10 * i + 0x1] = P(pop_reg, r(reg))
-            self._opcodes[0xC0 + 0x10 * i + 0x5] = P(push_reg, r(reg))
+            self._opcodes[0xC0 + 0x10 * i + 0x1] = pop_reg(r(reg))
+            self._opcodes[0xC0 + 0x10 * i + 0x5] = push_reg(r(reg))
 
         # ADD/ADC/SUB/SBC/AND/XOR/OR/CP
         for i1, op in enumerate(['add', 'adc', 'sub', 'sbc', 'and', 'xor', 'or', 'cp']):
             for i2, reg in enumerate([r(a) for a in 'bcdehl'] + ['(%hl)', r('a')]):
-                self._opcodes[0x80 + 0x8 * i1 + i2] = P(op_a_reg, op, reg)
+                self._opcodes[0x80 + 0x8 * i1 + i2] = op_a_reg(op, reg)
             self._opcodes[0xC6 + 0x8 * i1] = P(op_a_d8, op)
 
         # LD REG, d16
@@ -159,18 +170,18 @@ class GBZ80Disassembler:
 
         # ADD HL, REG
         for i, reg in enumerate(['bc', 'de', 'hl', 'sp']):
-            self._opcodes[0x09 + 0x10 * i] = P(add_hl_reg, r(reg))
+            self._opcodes[0x09 + 0x10 * i] = add_hl_reg(r(reg))
 
         # LD REG, REG / LD REG, d8
         for i1, reg1 in enumerate([r(a) for a in 'bcdehl'] + ['(%hl)', r('a')]):
             for i2, reg2 in enumerate([r(a) for a in 'bcdehl'] + ['(%hl)', r('a')]):
-                self._opcodes[0x40 + 0x8 * i1 + i2] = P(ld_reg_reg, reg1, reg2)
+                self._opcodes[0x40 + 0x8 * i1 + i2] = ld_reg_reg(reg1, reg2)
             self._opcodes[0x06 + 0x08 * i1] = P(ld_reg_d8, reg)
 
         # LD A, (REG)
         for i, reg in enumerate(['bc', 'de', 'hl+', 'hl-']):
-            self._opcodes[0x10 * i + 0x2] = P(ld_mreg_a, r(reg))
-            self._opcodes[0x10 * i + 0xA] = P(ld_a_mreg, r(reg))
+            self._opcodes[0x10 * i + 0x2] = ld_mreg_a(r(reg))
+            self._opcodes[0x10 * i + 0xA] = ld_a_mreg(r(reg))
 
         # LD A, (C) / LD (C), A
         self._opcodes[0xE2] = ld_mc_a
@@ -178,14 +189,14 @@ class GBZ80Disassembler:
 
         # RST
         for i in range(0x00, 0x40, 0x8):
-            self._opcodes[0xC7 + i] = P(rst_nn, i)
+            self._opcodes[0xC7 + i] = rst_nn(i)
 
         # CALL, JMP, JR
         self._opcodes[0x18] = jr_r8
         self._opcodes[0xC3] = jmp_a16
         self._opcodes[0xCD] = call_a16
         for i, flag in enumerate(['nzf', 'zf', 'ncy', 'cy']):
-            self._opcodes[0xC0 + 0x8 * i] = P(ret_flag, flag)
+            self._opcodes[0xC0 + 0x8 * i] = ret_flag(flag)
             self._opcodes[0x20 + 0x8 * i] = P(jr_flag_r8, flag)
             self._opcodes[0xC2 + 0x8 * i] = P(jmp_flag_a16, flag)
             self._opcodes[0xC2 + 0x8 * i + 0x2] = P(call_flag_a16, flag)
