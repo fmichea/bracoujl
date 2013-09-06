@@ -232,7 +232,7 @@ def _parse_line(line):
         return {'pc': pc, 'opcode': opcode, 'mem': mem}
     return None
 
-def chrlst(lst): return [chr(c) for c in lst]
+def chrlst(lst): return [struct.pack('B', c) for c in lst]
 
 CPU_CONF = {
     'parse_line': _parse_line,
