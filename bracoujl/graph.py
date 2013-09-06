@@ -172,7 +172,8 @@ class Block:
         self.insts.extend(other.insts)
         self.tos = Counter()
         for to in list(other.tos):
-            Link(self, other).do_link()
+            Link(self, to.to).do_link()
+            to.unlink_all()
 
     def __eq__(self, other):
         # This will also check addresses and the like. Don't forget to change
