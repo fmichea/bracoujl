@@ -50,4 +50,11 @@ Other informations
 * Example of result: [1](http://kushou.eu/images/nebula.svg)
 * If you see several paths after a call, it probably means the function called
   modifies its return address (for example if it's on the stack).
-* Could be named `jarbocul`, you can vote! (I just don't know how)
+
+Name Votes
+----------
+
+Any name containing 'bracoujl' letters (all of them, only once) can be used.
+Shout me an email to vote.
+
+ - bracoujl: 100 votes
