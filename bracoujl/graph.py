@@ -24,13 +24,6 @@ _DISASSEMBLER = proc.CPU_CONF.get('disassembler', type(None))()
 _BEGIN_ADDR = -1
 _END_ADDR   = -2
 
-def _readlines(f):
-    '''Avoids loading the whole file (that can become pretty heavy) in memory.'''
-    line = f.readline()
-    while line:
-        yield line[:-1]
-        line = f.readline()
-
 def _enum(**enums):
     return type('Enum', (), enums)
 
@@ -234,7 +227,7 @@ class Graph:
         blocks[_BEGIN_ADDR] = [last_block]
 
         with open(filename) as fd:
-            for line in _readlines(fd):
+            for line in fd:
                 inst = proc.CPU_CONF['parse_line'](line)
 
                 # If line is not recognized, just skip it.
