@@ -122,7 +122,7 @@ class Block:
 
     def __str__(self):
         res = '{name}:\n'.format(name=self.name())
-        res = '\n'.join(str(it) for it in self.insts)
+        res += '\n'.join(str(it) for it in self.insts)
         return res
 
     def __getitem__(self, item):
