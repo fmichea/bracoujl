@@ -135,8 +135,11 @@ class Block:
 
     def name(self):
         return '{block_type}_{pc:{addr_frmt}}'.format(
-            pc = self['pc'], block_type=self.block_type, addr_frmt=_ADDR_FRMT,
+            pc=self['pc'], block_type=self.block_type, addr_frmt=_ADDR_FRMT,
         )
+
+    def uniq_name(self):
+        return self.name() + '_' + hex(id(self))[2:]
 
     def accepts_merge_top(self):
         '''
@@ -180,7 +183,7 @@ class Block:
 class SpecialBlock(Block):
     def __init__(self, inst, label, mergeable=True):
         class SpecialInstruction(Instruction):
-            def __str__(self, label):
+            def __str__(self):
                 return '    {padding}  {label}'.format(
                     padding = ''.ljust(_ADDR_SIZE),
                     label = label,
@@ -193,6 +196,9 @@ class SpecialBlock(Block):
                 return super().__getitem__(item)
         super().__init__(inst, inst_class=SpecialInstruction)
         self._mergeable = mergeable
+
+    def name(self):
+        return super().name() + 'S'
 
     def accepts_merge_top(self):
         return self._mergeable and super().accepts_merge_top()
