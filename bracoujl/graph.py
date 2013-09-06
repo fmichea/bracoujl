@@ -283,8 +283,9 @@ class Graph:
                                 # Offset is not the size of the opcode *and*
                                 # this is the first time it happens, we are on
                                 # the triggering link.
-                                if spec_op == 'call':
+                                if spec_op == 'call_opcodes':
                                     block.block_type = BlockType.SUB
+                                    backtrace.append(last_block)
                                 link.link_type = LinkType.TAKEN
                                 last_block.tlf = True
 
