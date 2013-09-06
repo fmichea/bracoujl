@@ -49,6 +49,13 @@ class Link:
 
     def __init__(self, from_, to):
         self.from_, self.to, self.link_type = from_, to, LinkType.NORMAL
+        self._repr = '[{:x}] {:{addr_frmt}} -> {:{addr_frmt}} [{:x}]'.format(
+            id(self.from_),
+            self.from_['pc'],
+            self.to['pc'],
+            id(self.to),
+            addr_frmt=_ADDR_FRMT,
+        )
 
     def do_link(self):
         self.from_.tos[self] += 1
@@ -67,19 +74,13 @@ class Link:
         del self.to.froms[self]
 
     def __repr__(self):
-        return '[{:x}] {:{addr_frmt}} -> {:{addr_frmt}} [{:x}]'.format(
-            id(self.from_),
-            self.from_['pc'],
-            self.to['pc'],
-            id(self.to),
-            addr_frmt=_ADDR_FRMT,
-        )
+        return self._repr
 
     def __eq__(self, other):
-        return repr(self) == repr(other)
+        return self._repr == other._repr
 
     def __hash__(self):
-        return hash(repr(self))
+        return hash(self._repr)
 
 
 class Instruction:
