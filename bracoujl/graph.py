@@ -361,20 +361,21 @@ class Graph:
         keys = list(sorted(blocks.keys()))
         for pc in keys:
             for subblock in blocks[pc]:
-                # If this block cannot be merged on its bottom, we ignore it.
-                if not subblock.accepts_merge_bottom():
-                    continue
+                while True:
+                    # If this block cannot be merged on its bottom, we ignore it.
+                    if not subblock.accepts_merge_bottom():
+                        break
 
-                # We now know that we have only one link, we fetch it and check
-                # wether it accepts top merges.
-                to = list(subblock.tos.items())[0][0].to
-                if not to.accepts_merge_top():
-                    continue
+                    # We now know that we have only one link, we fetch it and check
+                    # wether it accepts top merges.
+                    to = list(subblock.tos.items())[0][0].to
+                    if not to.accepts_merge_top():
+                        break
 
-                # We know are sure we can merge this block, so we proceed and
-                # remove it from our block list.
-                blocks[to['pc']].remove(to)
-                subblock.merge(to)
+                    # We know are sure we can merge this block, so we proceed and
+                    # remove it from our block list.
+                    blocks[to['pc']].remove(to)
+                    subblock.merge(to)
 
         # We did it! We now have a complete list of sub-functions and interrupts
         # we can return, awesome!
