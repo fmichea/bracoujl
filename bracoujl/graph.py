@@ -99,9 +99,6 @@ class Instruction:
         return res
 
     def __getitem__(self, item):
-        if item not in ['pc', 'opcode', 'mem']:
-            raise KeyError(item)
-            #return super().__getitem__(item)
         return self._inst[item]
 
     def __eq__(self, other):
@@ -134,9 +131,7 @@ class Block:
         functions coresponds to the uniq instruction in it. The property always
         works for 'pc' property.
         '''
-        if len(self.insts) == 1 or item == 'pc':
-            return self.insts[0][item]
-        return super().__getitem__(item)
+        return self.insts[0][item]
 
     def name(self):
         return '{block_type}_{pc:{addr_frmt}}'.format(
