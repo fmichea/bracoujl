@@ -176,7 +176,7 @@ class GBZ80Disassembler:
         for i1, reg1 in enumerate([r(a) for a in 'bcdehl'] + ['(%hl)', r('a')]):
             for i2, reg2 in enumerate([r(a) for a in 'bcdehl'] + ['(%hl)', r('a')]):
                 self._opcodes[0x40 + 0x8 * i1 + i2] = ld_reg_reg(reg1, reg2)
-            self._opcodes[0x06 + 0x08 * i1] = P(ld_reg_d8, reg)
+            self._opcodes[0x06 + 0x08 * i1] = P(ld_reg_d8, reg1)
 
         # LD A, (REG)
         for i, reg in enumerate(['bc', 'de', 'hl+', 'hl-']):
