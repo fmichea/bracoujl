@@ -281,14 +281,8 @@ class Graph:
 
                 # Now we need to treat special cases.
                 offset = block['pc'] - last_block['pc']
-                if block['pc'] in proc.CPU_CONF['interrupts']:
-                    # If the block is the beginning of an interrupt, we don't
-                    # need the link, but we do need to keep the triggering
-                    # block in the backtrace.
-                    block.block_type = BlockType.INT
-                    backtrace.append(last_block)
-                    link = None
-                elif (last_block['opcode'] in proc.CPU_CONF['ret_opcodes'] and
+
+                if (last_block['opcode'] in proc.CPU_CONF['ret_opcodes'] and
                       offset != proc.CPU_CONF['ret_opcodes_size']):
                     # We a ret, and triggered it. A ret trigger happens when
                     # we don't fall-through. In that case, we traceback to the
@@ -301,6 +295,14 @@ class Graph:
                         msg += ' from.'
                         link.link_type = LinkType.RET_MISS
                         #print(msg, file=sys.stderr, flush=True)
+
+                if block['pc'] in proc.CPU_CONF['interrupts']:
+                    # If the block is the beginning of an interrupt, we don't
+                    # need the link, but we do need to keep the triggering
+                    # block in the backtrace.
+                    block.block_type = BlockType.INT
+                    backtrace.append(last_block)
+                    link = None
                 else:
                     for spec_op in ['call', 'jump']:
                         spec_op += '_opcodes'
