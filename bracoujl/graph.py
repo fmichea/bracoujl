@@ -178,8 +178,12 @@ class Block:
         self.insts.extend(other.insts)
         self.tos = Counter()
         for to in list(other.tos):
-            Link(self, to.to).do_link()
-            to.unlink_all()
+            link = Link(self, to.to)
+            # Link again.
+            n = to.unlink_all()
+            link.do_link(n)
+            # Copy link property.
+            link.link_type = to.link_type
 
     def __eq__(self, other):
         # This will also check addresses and the like. Don't forget to change
