@@ -50,9 +50,9 @@ class Link:
             addr_frmt=_ADDR_FRMT,
         )
 
-    def do_link(self):
-        self.from_.tos[self] += 1
-        self.to.froms[self] += 1
+    def do_link(self, n=1):
+        self.from_.tos[self] += n
+        self.to.froms[self] += n
 
     def do_unlink(self):
         self.from_.tos[self] -= 1
