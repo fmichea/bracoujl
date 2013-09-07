@@ -189,12 +189,14 @@ class Block:
 
 class SpecialBlock(Block):
     def __init__(self, inst, label, mergeable=True):
+        blockself = self
         class SpecialInstruction(Instruction):
             def __str__(self):
-                return '    {padding}  {label}'.format(
-                    padding = ''.ljust(_ADDR_SIZE),
-                    label = label,
-                )
+                res = ''
+                if blockself._mergeable:
+                    res += '    {padding} '.format(padding=''.ljust(_ADDR_SIZE))
+                res += '{label}'.format(label=label)
+                return res
             def __getitem__(self, item):
                 if item in ['pc', 'opcode', 'mem']:
                     if item in self._inst:
