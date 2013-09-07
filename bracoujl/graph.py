@@ -319,10 +319,11 @@ class Graph:
                                 if spec_op == 'call_opcodes':
                                     block.block_type = BlockType.SUB
                                     link.link_type = LinkType.CALL_TAKEN
-                                    backtrace.append(last_block)
                                 else:
                                     link.link_type = LinkType.TAKEN
                                 last_block.tlf = True
+                            if spec_op == 'call_opcodes':
+                                backtrace.append(last_block)
 
                 # We finally really link the Link if it still exists and was not
                 # known, and add the block to the list of blocks.
