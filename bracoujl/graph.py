@@ -27,7 +27,7 @@ _END_ADDR   = 0x10001
 def _enum(**enums):
     return type('Enum', (), enums)
 
-LinkType    = _enum(NORMAL='black', TAKEN='green', CALL_TAKEN='blue', NOT_TAKEN='red')
+LinkType    = _enum(NORMAL='black', TAKEN='green', CALL_TAKEN='blue', NOT_TAKEN='red', RET_MISS='brown')
 BlockType   = _enum(INT='int', LOC='loc', SUB='sub')
 GraphState  = _enum(NORMAL_GRAPH=0, INTERRUPT=1)
 
@@ -276,6 +276,7 @@ class Graph:
                     except IndexError:
                         msg = 'Could not pop call place from the which we come'
                         msg += ' from.'
+                        link.link_type = LinkType.RET_MISS
                         #print(msg, file=sys.stderr, flush=True)
                 else:
                     for spec_op in ['call', 'jump']:
