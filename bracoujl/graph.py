@@ -280,7 +280,7 @@ class Graph:
                 link = find_link(last_block, block)
 
                 # Now we need to treat special cases.
-                offset = last_block['pc'] - block['pc']
+                offset = block['pc'] - last_block['pc']
                 if block['pc'] in proc.CPU_CONF['interrupts']:
                     # If the block is the beginning of an interrupt, we don't
                     # need the link, but we do need to keep the triggering
