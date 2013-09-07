@@ -5,6 +5,7 @@
 
 import argparse
 import os
+import subprocess
 import sys
 
 import bracoujl.graph as bg
@@ -32,9 +33,10 @@ def main():
         dw = bwd.DotWriter()
         for function in functions:
             print(' - {}'.format(function.name()))
-            if function.name() in ['sub_0216', 'int_0010']:
-                with open(os.path.join(output_dir, function.uniq_name() + '.dot'), 'w') as f:
-                    dw.generate_graph(f, function)
+            dot_name = os.path.join(output_dir, function.uniq_name() + '.dot')
+            with open(dot_name, 'w') as f:
+                dw.generate_graph(f, function)
+            subprocess.call(['dot', '-Tsvg', dot_name, '-o', dot_name[:-4] + '.svg'])
 
 if __name__ == '__main__':
     main()
