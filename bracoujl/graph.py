@@ -120,7 +120,8 @@ class Block:
 
     def __init__(self, inst, inst_class=Instruction):
         self.insts, self.block_type = [inst_class(inst)], BlockType.LOC
-        self.froms, self.tos, self.tlf = Counter(), Counter(), False
+        self.froms, self.tos = Counter(), Counter()
+        self.tlf, self.uniq = False, True
 
     def __str__(self):
         res = '{name}:\n'.format(name=self.name())
@@ -141,7 +142,10 @@ class Block:
         )
 
     def uniq_name(self):
-        return self.name() + '_' + hex(id(self))[2:]
+        name = self.name()
+        if not self.uniq:
+            name += '_' + hex(id(self))[2:]
+        return name
 
     def accepts_merge_top(self):
         '''
@@ -253,6 +257,11 @@ class Graph:
                         break
                 if not block_found:
                     block = Block(inst)
+                    if 0 < len(blocks[block['pc']]):
+                        # No loop needed, if we set the first one and each one
+                        # from the second, we will set them all.
+                        blocks[block['pc']][0].uniq = False
+                        block.uniq = False
                     blocks[block['pc']].append(block)
 
                 # Now we need to link this block and the last block.
