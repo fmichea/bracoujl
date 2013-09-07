@@ -63,8 +63,10 @@ class Link:
             del self.to.froms[self]
 
     def unlink_all(self):
+        count = self.from_.tos[self]
         del self.from_.tos[self]
         del self.to.froms[self]
+        return count
 
     def __repr__(self):
         return self._repr
