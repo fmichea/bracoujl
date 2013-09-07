@@ -204,6 +204,12 @@ class SpecialBlock(Block):
         super().__init__(inst, inst_class=SpecialInstruction)
         self._mergeable = mergeable
 
+    def __str__(self):
+        s = super().__str__().splitlines()
+        if len(s) == 2:
+            return s[-1]
+        return '\n'.join(s)
+
     def name(self):
         return super().name() + 'S'
 
