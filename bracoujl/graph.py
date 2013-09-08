@@ -236,6 +236,12 @@ class Graph:
                     break
             return link
 
+        def ret_miss(link):
+            msg = 'Could not pop call place from the which we come'
+            msg += ' from.'
+            link.link_type = LinkType.RET_MISS
+            #print(msg, file=sys.stderr, flush=True)
+
         blocks, last_block, backtrace = dict(), None, list()
 
         ########################################################################
@@ -283,19 +289,20 @@ class Graph:
                 offset = block['pc'] - last_block['pc']
 
                 if (last_block['opcode'] in proc.CPU_CONF['ret_opcodes'] and
-                      offset != proc.CPU_CONF['ret_opcodes_size']):
+                    offset != proc.CPU_CONF['ret_opcodes_size']):
                     # We a ret, and triggered it. A ret trigger happens when
                     # we don't fall-through. In that case, we traceback to the
                     # place where we were called.
                     try:
-                        last_block = backtrace.pop()
-                        link = find_link(last_block, block)
+                        backblock, size = backtrace[-1]
+                        if size == 0 or block['pc'] == backblock['pc'] + size:
+                            last_block = backblock
+                            link = find_link(last_block, block)
+                            backtrace.pop()
+                        else:
+                            ret_miss(link)
                     except IndexError:
-                        msg = 'Could not pop call place from the which we come'
-                        msg += ' from.'
-                        link.link_type = LinkType.RET_MISS
-                        #print(msg, file=sys.stderr, flush=True)
-
+                        ret_miss(link)
                 if block['pc'] in proc.CPU_CONF['interrupts']:
                     # If the block is the beginning of an interrupt, we don't
                     # need the link, but we do need to keep the triggering
