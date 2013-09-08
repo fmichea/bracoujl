@@ -303,13 +303,6 @@ class Graph:
                             ret_miss(link)
                     except IndexError:
                         ret_miss(link)
-                if block['pc'] in proc.CPU_CONF['interrupts']:
-                    # If the block is the beginning of an interrupt, we don't
-                    # need the link, but we do need to keep the triggering
-                    # block in the backtrace.
-                    block.block_type = BlockType.INT
-                    backtrace.append(last_block)
-                    link = None
                 else:
                     for spec_op in ['call', 'jump']:
                         spec_op += '_opcodes'
@@ -331,6 +324,16 @@ class Graph:
                                 last_block.tlf = True
                             if spec_op == 'call_opcodes':
                                 backtrace.append(last_block)
+
+                if block['pc'] in proc.CPU_CONF['interrupts']:
+                    # If the block is the beginning of an interrupt, we don't
+                    # need the link, but we do need to keep the triggering
+                    # block in the backtrace.
+                    block.block_type, size = BlockType.INT, 0
+                    if last_block['opcode'] in proc.CPU_CONF['int_opcodes']:
+                        size = proc.CPU_CONF['int_opcodes_size']
+                    backtrace.append((last_block, size))
+                    link = None
 
                 # We finally really link the Link if it still exists and was not
                 # known, and add the block to the list of blocks.
