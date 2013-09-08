@@ -164,7 +164,7 @@ class Block:
         '''
         if len(self.tos) != 1:
             return False
-        for spec_opc in ['ret', 'call', 'jump']:
+        for spec_opc in ['ret', 'call', 'jump', 'jr']:
             if self.insts[-1]['opcode'] in proc.CPU_CONF[spec_opc + '_opcodes']:
                 return False
         return True
@@ -304,7 +304,7 @@ class Graph:
                     except IndexError:
                         ret_miss(link)
                 else:
-                    for spec_op in ['call', 'jump']:
+                    for spec_op in ['call', 'jump', 'jr']:
                         spec_op += '_opcodes'
                         if last_block['opcode'] in proc.CPU_CONF[spec_op]:
                             # Links are colorized depending on the detection of
