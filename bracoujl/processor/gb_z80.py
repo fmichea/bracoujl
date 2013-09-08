@@ -239,6 +239,10 @@ CPU_CONF = {
     'addr_width': 16,
     'opcode_size': 3,
     'interrupts': range(0x0, 0x60 + 1, 0x8),
+
+    'int_opcodes': chrlst(range(0xc7, 0x100, 0x8)),
+    'int_opcodes_size': 1,
+
     'call_opcodes': chrlst([0xc4, 0xcc, 0xcd, 0xd4, 0xdc]),
     'call_opcodes_size': 3,
 
