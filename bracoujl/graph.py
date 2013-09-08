@@ -323,7 +323,8 @@ class Graph:
                                     link.link_type = LinkType.TAKEN
                                 last_block.tlf = True
                             if spec_op == 'call_opcodes':
-                                backtrace.append(last_block)
+                                size = proc.CPU_CONF['call_opcodes_size']
+                                backtrace.append((last_block, size))
 
                 if block['pc'] in proc.CPU_CONF['interrupts']:
                     # If the block is the beginning of an interrupt, we don't
