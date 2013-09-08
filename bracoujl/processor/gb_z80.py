@@ -69,7 +69,7 @@ class GBZ80Disassembler:
             addr = struct.unpack('<H', inst['mem'])[0]
             return 'ld ($0x{:04X}), %sp'.format(addr)
         def ld_reg_d8(reg, inst):
-            val = struct.unpack('b', inst['mem'][:1])[0]
+            val = struct.unpack('B', inst['mem'][:1])[0]
             return 'ld {}, $0x{:02X}'.format(reg, val)
         def ld_reg_d16(reg, inst):
             val = struct.unpack('<H', inst['mem'])[0]
@@ -89,7 +89,6 @@ class GBZ80Disassembler:
         def ldh_ma8_a(inst):
             addr = inst['mem'][0]
             return 'ldh ($0x{:04X}), %a'.format(0xFF00 + addr)
-#        return '{} %hl'
         def op_a_d8(op, inst):
             d8 = inst['mem'][0]
             return '{} %a, $0x{}'.format(op, d8)
@@ -107,11 +106,13 @@ class GBZ80Disassembler:
         self._opcodes = dict()
 
         # PREFIX CB
-        self._cb_regs = ["b", "c", "d", "e", "h", "l", "(hl)", "a"]
-        self._cb_ops = ["rlc", "rrc", "rl", "rr", "sla", "sra", "swap", "srl"]
+        self._cb_ops = []
+        self._cb_regs = [r(a) for a in ['b', 'c', 'd', 'e', 'h', 'l']] + ['(%hl)', r('a')]
+        for o in ['rlc', 'rrc', 'rl', 'rr', 'sla', 'sra', 'swap', 'srl']:
+            self._cb_ops.append(o + ' ')
         for o in ["bit", "res", "set"]:
             for i in range(8):
-                self._cb_ops.append(o + " " + str(i) + ",")
+                self._cb_ops.append(o + ' $' + str(i) + ', ')
         self._opcodes[0xCB] = cb
 
         # LD (a16), SP
@@ -254,5 +255,6 @@ CPU_CONF = {
 
     'ret_opcodes': chrlst([0xc9, 0xd9, 0xc0, 0xc8, 0xd0, 0xd8]),
     'ret_opcodes_size': 1,
+
     'disassembler': GBZ80Disassembler,
 }
