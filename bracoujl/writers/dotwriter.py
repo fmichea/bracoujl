@@ -4,29 +4,34 @@
 
 import sys
 
-class DotWriter:
-    def generate_graph(self, output_file, function):
-        output_file.write('digraph {name} {{\n'.format(name=function.uniq_name()))
-        output_file.write('\tsplines = true;\n')
-        output_file.write('\tnode [ shape = box, fontname = "Deja Vu Sans Mono" ];\n\n')
+import bracoujl.writers.writer as w
 
-        blocks, blocks_done = [function], []
-        while blocks:
-            block = blocks.pop()
-            if block in blocks_done:
-                continue
-            output_file.write('\t\t{block_name} [ label = "{code}\\l" ];\n'.format(
-                block_name = block.uniq_name(),
-                code = str(block).replace('\n', '\\l').replace('\t', ' ' * 4)
-            ))
+class DotWriter(w.Writer):
+    EXT = 'dot'
 
-            for link in block.tos.keys():
-                output_file.write('\t\t{}\n'.format(self._generate_link(link)))
-                blocks.append(link.to)
-            output_file.write('\n')
-            blocks_done.append(block)
+    def generate(self, function, output_file=None):
+        with self._output_file(function, output_file) as of:
+            of.write('digraph {name} {{\n'.format(name=function.uniq_name()))
+            of.write('\tsplines = true;\n')
+            of.write('\tnode [ shape = box, fontname = "Deja Vu Sans Mono" ];\n\n')
 
-        output_file.write('}\n')
+            blocks, blocks_done = [function], []
+            while blocks:
+                block = blocks.pop()
+                if block in blocks_done:
+                    continue
+                of.write('\t\t{block_name} [ label = "{code}\\l" ];\n'.format(
+                    block_name = block.uniq_name(),
+                    code = str(block).replace('\n', '\\l').replace('\t', ' ' * 4)
+                ))
+
+                for link in block.tos.keys():
+                    of.write('\t\t{}\n'.format(self._generate_link(link)))
+                    blocks.append(link.to)
+                of.write('\n')
+                blocks_done.append(block)
+
+            of.write('}\n')
 
     def _generate_link(self, link):
         return '{block1} -> {block2} [ {options} ];'.format(

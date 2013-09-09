@@ -14,8 +14,16 @@ import bracoujl.writers.dotwriter as bwd
 
 def main():
     parser = argparse.ArgumentParser(description='Some debugging tool.')
-    parser.add_argument('-o', '--output-dir', action='store', required=True,
+    parser.add_argument('-o', '--output-dir', action='store', required=False,
                         metavar='dir', help='output directory')
+    parser.add_argument('-s', '--serialize', action='store_true', required=False,
+                        help='create a serialized version of the graphs.')
+
+    group = parser.add_argument_group('actions')
+    group.add_argument('--dot', action='store_true', help='generate dot files')
+    group.add_argument('--svg', action='store_true', help='generate svg files')
+    group.add_argument('--cmp', action='store_true', help='compare two graphs')
+
     parser.add_argument('log', action='store', nargs='+',
                         help='log file correctly formatted')
     args = parser.parse_args(sys.argv[1:])
@@ -26,17 +34,19 @@ def main():
         msg += 'to generate the graphs.'
         sys.exit(msg.format(path=output_dir))
 
+    graphs, grapher = dict(), bg.Graph()
     for log in args.log:
-        functions = bg.Graph().generate_graph(log)
-        print('Found {} functions:'.format(len(functions)))
+        functions = None
+        if args.serialize:
+            functions = grapher.unserialize(log)
+        if functions is None:
+            functions = grapher.generate_graph(log)
+        if args.serialize:
+            grapher.serialize(log, functions)
 
-        dw = bwd.DotWriter()
+        print('Found {} functions in {}:'.format(len(functions), log))
         for function in functions:
             print(' - {}'.format(function.name()))
-            dot_name = os.path.join(output_dir, function.uniq_name() + '.dot')
-            with open(dot_name, 'w') as f:
-                dw.generate_graph(f, function)
-            subprocess.call(['dot', '-Tsvg', dot_name, '-o', dot_name[:-4] + '.svg'])
 
 if __name__ == '__main__':
     main()
