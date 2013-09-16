@@ -251,6 +251,7 @@ class Graph:
 
         # Create a special block for the begining of the logs.
         last_block = SpecialBlock({'pc': _BEGIN_ADDR}, 'BEGIN')
+        last_block.block_type = BlockType.SUB
         blocks[_BEGIN_ADDR] = [last_block]
 
         with open(filename) as fd:
