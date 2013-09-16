@@ -15,14 +15,15 @@ from collections import Counter
 # XXX: Nothing smart for now. Useful?
 import bracoujl.processor.gb_z80 as proc
 
-_ADDR_SIZE = m.ceil(m.log2(proc.CPU_CONF.get('addr_width', 32)))
+_ADDR_WIDTH = proc.CPU_CONF.get('addr_width', 32)
+_ADDR_SIZE = m.ceil(m.log2(_ADDR_WIDTH))
 _ADDR_FRMT = '0{}X'.format(_ADDR_SIZE)
 
 _DISASSEMBLER = proc.CPU_CONF.get('disassembler', type(None))()
 
 # These two will not be displayed.
-_BEGIN_ADDR = 0x10000
-_END_ADDR   = 0x10001
+_BEGIN_ADDR = 1 << _ADDR_WIDTH
+_END_ADDR   = 1 << _ADDR_WIDTH + 1
 
 def _enum(**enums):
     return type('Enum', (), enums)
