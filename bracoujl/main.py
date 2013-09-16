@@ -9,8 +9,9 @@ import subprocess
 import sys
 
 import bracoujl.graph as bg
+
 import bracoujl.writers.dotwriter as bwd
-#import bracoujl.writers.asciiwriter
+import bracoujl.writers.svgwriter as bws
 
 def main():
     parser = argparse.ArgumentParser(description='Some debugging tool.')
@@ -28,11 +29,18 @@ def main():
                         help='log file correctly formatted')
     args = parser.parse_args(sys.argv[1:])
 
-    output_dir = os.path.abspath(args.output_dir)
-    if not os.path.exists(output_dir):
-        msg = 'I didn\'t find directory/symbolic link named `{path}` where '
-        msg += 'to generate the graphs.'
-        sys.exit(msg.format(path=output_dir))
+    if not (args.dot or args.svg or args.cmp):
+        parser.error('Must precise at least --dot or --svg or --cmp.')
+
+    output_dir = None
+    if args.dot or args.svg:
+        if not args.output_dir:
+            parser.error('This option requires --output-dir')
+        output_dir = os.path.abspath(args.output_dir)
+        if not os.path.exists(output_dir):
+            msg = 'I didn\'t find directory/symbolic link named `{path}` where '
+            msg += 'to generate the graphs.'
+            sys.exit(msg.format(path=output_dir))
 
     graphs, grapher = dict(), bg.Graph()
     for log in args.log:
@@ -47,6 +55,15 @@ def main():
         print('Found {} functions in {}:'.format(len(functions), log))
         for function in functions:
             print(' - {}'.format(function.name()))
+        graphs[log] = functions
+
+    dw, sw = bwd.DotWriter(output_dir), bws.SVGWriter(output_dir)
+    for log in args.log:
+        for function in graphs[log]:
+            if args.svg:
+                sw.generate(function)
+            elif args.dot:
+                dw.generate(function)
 
 if __name__ == '__main__':
     main()
