@@ -13,7 +13,8 @@ class SVGWriter(w.Writer):
     EXT = 'svg'
 
     def __init__(self, output_dir):
-        rc = subprocess.call(['which', 'dot'])
+        rc = subprocess.call(['which', 'dot'], stdout=subprocess.DEVNULL,
+                                               stderr=subprocess.DEVNULL)
         if rc != 0:
             sys.exit('error: dot was not found in your $PATH.')
         self._dw = wdot.DotWriter(output_dir)
