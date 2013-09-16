@@ -15,7 +15,7 @@ class Writer:
         if output_file:
             yield output_file
         else:
-            f = open(self._output_filename(ext, function), 'w')
+            f = open(self.output_filename(ext, function), 'w')
             try:
                 yield f
             finally:
