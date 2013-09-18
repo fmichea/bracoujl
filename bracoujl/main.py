@@ -17,8 +17,8 @@ def main():
     parser = argparse.ArgumentParser(description='Some debugging tool.')
     parser.add_argument('-o', '--output-dir', action='store', required=False,
                         metavar='dir', help='output directory')
-    parser.add_argument('-s', '--serialize', action='store_true', required=False,
-                        help='create a serialized version of the graphs.')
+#    parser.add_argument('-s', '--serialize', action='store_true', required=False,
+#                        help='create a serialized version of the graphs.')
 
     group = parser.add_argument_group('actions')
     group.add_argument('--dot', action='store_true', help='generate dot files')
@@ -44,13 +44,13 @@ def main():
 
     graphs, grapher = dict(), bg.Graph()
     for log in args.log:
-        functions = None
-        if args.serialize:
-            functions = grapher.unserialize(log)
-        if functions is None:
-            functions = grapher.generate_graph(log)
-        if args.serialize:
-            grapher.serialize(log, functions)
+#        functions = None
+#        if args.serialize:
+#            functions = grapher.unserialize(log)
+#        if functions is None:
+        functions = grapher.generate_graph(log)
+#        if args.serialize:
+#            grapher.serialize(log, functions)
 
         print('Found {} functions in {}:'.format(len(functions), log))
         for function in functions:
