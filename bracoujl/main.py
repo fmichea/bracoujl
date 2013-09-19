@@ -41,6 +41,8 @@ def main():
             msg = 'I didn\'t find directory/symbolic link named `{path}` where '
             msg += 'to generate the graphs.'
             sys.exit(msg.format(path=output_dir))
+    elif args.cmp and len(args.log) != 2:
+        sys.exit('Comparison needs two logs.')
 
     graphs, grapher = dict(), bg.Graph()
     for log in args.log:
@@ -53,17 +55,20 @@ def main():
 #            grapher.serialize(log, functions)
 
         print('Found {} functions in {}:'.format(len(functions), log))
-        for function in functions:
+        for function in functions.values():
             print(' - {}'.format(function.name()))
         graphs[log] = functions
 
-    dw, sw = bwd.DotWriter(output_dir), bws.SVGWriter(output_dir)
-    for log in args.log:
-        for function in graphs[log]:
-            if args.svg:
-                sw.generate(function)
-            elif args.dot:
-                dw.generate(function)
+    if args.svg or args.dot:
+        dw, sw = bwd.DotWriter(output_dir), bws.SVGWriter(output_dir)
+        for log in args.log:
+            for function in graphs[log].values():
+                if args.svg:
+                    sw.generate(function)
+                elif args.dot:
+                    dw.generate(function)
+    elif args.cmp:
+        bg.compare(graphs[args.log[0]], graphs[args.log[1]])
 
 if __name__ == '__main__':
     main()

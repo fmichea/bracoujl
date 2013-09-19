@@ -191,6 +191,9 @@ class Block:
         # this if it is not the case anymore.
         return self.insts == other.insts
 
+    def __hash__(self):
+        return hash(self.uniq_name())
+
 
 class SpecialBlock(Block):
     def __init__(self, inst, label, mergeable=True):
@@ -356,13 +359,13 @@ class Graph:
         #####         unmergeable, that will only contain the name of the  #####
         #####         functions.                                           #####
         ########################################################################
-        functions, keys = [], list(sorted(blocks.keys()))
+        functions, keys = dict(), list(sorted(blocks.keys()))
         for pc in keys:
             for subblock in blocks[pc]:
                 # If we did interrupts correctly, we don't have any link that
                 # comes to it, we just need to put it in the function list.
                 if subblock.block_type == BlockType.INT:
-                    functions.append(subblock)
+                    functions[subblock.uniq_name()] = subblock
 
                 # We only care about subs from here.
                 if subblock.block_type != BlockType.SUB:
@@ -388,7 +391,7 @@ class Graph:
                 # can cut it from and put it in a separate file later, so we
                 # keep it in a list of functions.
                 if len(subblock.froms) == 0:
-                    functions.append(subblock)
+                    functions[subblock.uniq_name()] = subblock
                 else:
                     print('Function {} is within another function.'.format(
                         subblock.name()
@@ -420,3 +423,67 @@ class Graph:
         # We did it! We now have a complete list of sub-functions and interrupts
         # we can return, awesome!
         return functions
+
+
+def compare(funcs1, funcs2):
+    funcs, count = set(funcs1.keys()) | set(funcs2.keys()), 0
+    print('Comparison of two graphs:')
+    for funcname in funcs:
+        #print('FUNC', funcname)
+        errors = []
+        try: func1 = funcs1[funcname]
+        except KeyError:
+            errors.append('Function {} is not defined in first graph.'.format(funcname))
+            continue
+        try: func2 = funcs2[funcname]
+        except KeyError:
+            errors.append('Function {} is not defined in second graph.'.format(funcname))
+            continue
+        blocks, visited = [(func1, func2)], set()
+        while blocks:
+            block1, block2 = blocks.pop()
+            if (block1, block2) in visited:
+                continue
+            visited.add((block1, block2))
+            if block1 is not None and block2 is not None:
+                #print('[1] Doing', block1.uniq_name(), block2.uniq_name())
+                # Block in both functions!
+                if block1 != block2:
+                    errors.append('Block {} is different in functions {}.'.format(
+                        block1.uniq_name(), func1.uniq_name()
+                    ))
+                    count += 1
+                tos1 = dict((l.to.uniq_name(), l.to) for l in block1.tos)
+                tos2 = dict((l.to.uniq_name(), l.to) for l in block2.tos)
+                #print('tos1:', tos1)
+                #print('tos2:', tos2)
+                for b in list(set(tos1.keys()) - set(tos2.keys())):
+                    m = 'Block {} is only reached from first function from '
+                    m += 'block {}'
+                    errors.append(m.format(b, block1.uniq_name()))
+                    blocks.insert(0, (tos1[b], None))
+                    count += 1
+                for b in list(set(tos2.keys()) - set(tos1.keys())):
+                    m = 'Block {} is only reached from second function from '
+                    m += 'block {}'
+                    errors.append(m.format(b, block2.uniq_name()))
+                    blocks.insert(0, (None, tos2[b]))
+                    count += 1
+                for b in list(set(tos1.keys()) & set(tos2.keys())):
+                    blocks.insert(0, (tos1[b], tos2[b]))
+            elif block2 is None:
+                #print('[2] Doing', block1.uniq_name())
+                # Only in first function.
+                # XXX: Do something?
+                pass
+            else:
+                # Only in second function.
+                # XXX: Do something?
+                #print('[3] Doing', block2.uniq_name())
+                pass
+        if errors:
+            print('Begin comparison of function: {}'.format(funcname))
+            for error in errors:
+                print(error)
+            print('-' * 40)
+    print('Total error count:', count)

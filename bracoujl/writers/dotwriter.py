@@ -34,10 +34,11 @@ class DotWriter(w.Writer):
             of.write('}\n')
 
     def _generate_link(self, link):
+        opts = 'color = {color}, tailport = s, headport = n, label = "{l}"'.format(
+            color = link.link_type, l=link.from_.tos[link],
+        )
         return '{block1} -> {block2} [ {options} ];'.format(
             block1 = link.from_.uniq_name(),
             block2 = link.to.uniq_name(),
-            options = 'color = {color}, tailport = s, headport = n'.format(
-                color = link.link_type,
-            )
+            options = opts,
         )
