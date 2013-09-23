@@ -122,7 +122,7 @@ class Block:
     def __init__(self, inst, inst_class=Instruction):
         self.insts, self.block_type = [inst_class(inst)], BlockType.LOC
         self.froms, self.tos = Counter(), Counter()
-        self.tlf, self.uniq = False, True
+        self.tlf, self.uniq, self.within = False, True, []
 
     def __str__(self):
         res = '{name}:\n'.format(name=self.name())
@@ -246,6 +246,30 @@ class Graph:
             link.link_type = LinkType.RET_MISS
             #print(msg, file=sys.stderr, flush=True)
 
+        def cutfunction(blocks, function):
+            todos, done = [function], []
+            while todos:
+                todo = todos.pop()
+
+                if todo in done:
+                    continue
+                done.append(todo)
+
+                # When the block was already removed from the list, we
+                # just ignore but conitnue to follow links to add the
+                # "within" information.
+                try:
+                    blocks[todo['pc']].remove(todo)
+                except ValueError:
+                    pass
+
+                # Add the knownledge that this block is within the
+                # current function.
+                todo.within.append(function.uniq_name())
+
+                # We remove it and continue on its blocks
+                todos.extend([to.to for to in todo.tos])
+
         blocks, last_block, backtrace = dict(), None, list()
 
         ########################################################################
@@ -359,13 +383,13 @@ class Graph:
         #####         unmergeable, that will only contain the name of the  #####
         #####         functions.                                           #####
         ########################################################################
-        functions, keys = dict(), list(sorted(blocks.keys()))
+        functions, keys = [], list(sorted(blocks.keys()))
         for pc in keys:
             for subblock in blocks[pc]:
                 # If we did interrupts correctly, we don't have any link that
                 # comes to it, we just need to put it in the function list.
                 if subblock.block_type == BlockType.INT:
-                    functions[subblock.uniq_name()] = subblock
+                    functions.append(subblock)
 
                 # We only care about subs from here.
                 if subblock.block_type != BlockType.SUB:
@@ -387,15 +411,8 @@ class Graph:
                         link.do_link()
                     from_.unlink_all()
 
-                # Finally, if this function is not part of another function, we
-                # can cut it from and put it in a separate file later, so we
-                # keep it in a list of functions.
-                if len(subblock.froms) == 0:
-                    functions[subblock.uniq_name()] = subblock
-                else:
-                    print('Function {} is within another function.'.format(
-                        subblock.name()
-                    ))
+                # Keep the beginning of the sub in a list.
+                functions.append(subblock)
 
         ########################################################################
         ##### STEP 3: Now we will merge all the blocks that can be merged  #####
@@ -420,9 +437,54 @@ class Graph:
                     blocks[to['pc']].remove(to)
                     subblock.merge(to)
 
+        ########################################################################
+        ##### STEP 4: Now we can decide which functions we will need to    #####
+        #####         generate.                                            #####
+        ########################################################################
+        result = {'functions': dict(), 'inner-functions': dict()}
+
+        innerfunctions = []
+        for subblock in functions:
+            # We have two possibilities: the beginning of the sub is not only
+            # called, so we keep it for later concidering it to be within
+            # another function. Else, we just cut out the current sub function
+            # from the blocks.
+            if len(subblock.froms) != 0:
+                innerfunctions.append(subblock)
+            else:
+                result['functions'][subblock.uniq_name()] = subblock
+                cutfunction(blocks, subblock)
+
+        # Finally, for each "inner function" that were not reached from any
+        # standard function, we cut it out and generate it anyway, it must mean
+        # it is "within itself", example:
+        #
+        # sub_0216:
+        #    0216 - ldh %a, ($0xFF44)
+        #    0218 - cp %a, $0x145
+        #    021A - jr cy, $0xFA ; ($-6)
+        #    021C - ret
+        for inner in innerfunctions:
+            if inner.within == []:
+                result['functions'][inner.uniq_name()] = inner
+                cutfunction(blocks, inner)
+            else:
+                result['inner-functions'][inner.uniq_name()] = inner
+
+        ########################################################################
+        ##### STEP 5: SANITY CHECK: if there are still blocks in the main  #####
+        #####         dictionary, we probably failed something.            #####
+        ########################################################################
+        remaining = sum([blocks[pc] for pc in keys], [])
+        if remaining:
+            msg = 'WARNING: Sanity check failed, there are remaining blocks '
+            msg += 'in the internal dictionary: '
+            msg += ', '.join([b.uniq_name() for b in remaining])
+            print(msg)
+
         # We did it! We now have a complete list of sub-functions and interrupts
         # we can return, awesome!
-        return functions
+        return result
 
 
 def compare(funcs1, funcs2):

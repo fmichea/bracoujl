@@ -46,29 +46,27 @@ def main():
 
     graphs, grapher = dict(), bg.Graph()
     for log in args.log:
-#        functions = None
-#        if args.serialize:
-#            functions = grapher.unserialize(log)
-#        if functions is None:
-        functions = grapher.generate_graph(log)
-#        if args.serialize:
-#            grapher.serialize(log, functions)
-
-        print('Found {} functions in {}:'.format(len(functions), log))
-        for function in functions.values():
+        result = grapher.generate_graph(log)
+        count = len(result['functions']) + len(result['inner-functions'])
+        print('Found {} functions in {}:'.format(count, log))
+        for function in result['functions'].values():
             print(' - {}'.format(function.name()))
-        graphs[log] = functions
+        for function in result['inner-functions'].values():
+            print(' - {} within the functions {}'.format(', '.join(
+                function.within
+            )))
+        graphs[log] = result
 
     if args.svg or args.dot:
         dw, sw = bwd.DotWriter(output_dir), bws.SVGWriter(output_dir)
         for log in args.log:
-            for function in graphs[log].values():
+            for function in graphs[log]['functions'].values():
                 if args.svg:
                     sw.generate(function)
                 elif args.dot:
                     dw.generate(function)
     elif args.cmp:
-        bg.compare(graphs[args.log[0]], graphs[args.log[1]])
+        bg.compare(graphs[args.log[0]]['functions'], graphs[args.log[1]]['functions'])
 
 if __name__ == '__main__':
     main()
