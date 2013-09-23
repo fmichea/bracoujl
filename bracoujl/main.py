@@ -52,9 +52,9 @@ def main():
         for function in result['functions'].values():
             print(' - {}'.format(function.name()))
         for function in result['inner-functions'].values():
-            print(' - {} within the functions {}'.format(', '.join(
-                function.within
-            )))
+            print(' - {} within the functions {}'.format(
+                function.uniq_name(), ', '.join(function.within)
+            ))
         graphs[log] = result
 
     if args.svg or args.dot:
