@@ -405,6 +405,7 @@ class Graph:
                     call_str = 'Call to {}.'.format(subblock.name())
                     call_block = SpecialBlock({'pc': subblock['pc']}, call_str,
                                               mergeable=False)
+                    call_block.uniq = False
                     link = Link(from_.from_, call_block)
                     link.link_type = LinkType.CALL_TAKEN
                     for _ in range(cnt):
