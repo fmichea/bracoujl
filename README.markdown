@@ -34,20 +34,22 @@ And maybe a lot more.
 
 First, you really don't want if you don't already know where to search. Within
 20 instructions, you'll fall into a loop that copies 512 bytes of data, byte by
-byte, in like 4 instructions, then another loop... You get it. Also, it will
-begin really painful, really quickly, to follow what call you are in and what
-was executed before in that function. Also your CPU will switch to interrupts
-all the time, .... So you probably want to try this tool if you have no idea
-where to search for.
+byte, in like 4 instructions per byte, then another loop that does it with
+anohter 512 bytes, then... You get it.
+
+Also, it will become really painful, really quickly, to follow what call you
+are in and what was executed before in that function. Also your CPU will switch
+to interrupts all the time, .... So you probably want to try this tool if you
+have no idea where to search for.
 
 ### What does it support?
 
 It supports:
 
  - (Conditional) Call backtracking and detection.
- - (Conditional) jumps detection, with triggering/fall-through edge detection.
- - Interrupt detection.
- - Function and interrupt separation.
+ - (Conditional) Jumps detection, with triggering/fall-through edge detection.
+ - Interrupts detection.
+ - Function and interrupt separation, in multiple files, for readability.
  - Memory changes support (if your ROM executes banked memory, you might
    execute two totally different functions that share the same address).
  - Disassembly support directly in bracoujl if the processor supports it:
@@ -67,7 +69,7 @@ results.
 
 Game: What is wrong with the second graph? [[1]](http://kushou.eu/images/pub/bracoujl/demo/bbman.sub_0819.good.svg) [[2]](http://kushou.eu/images/pub/bracoujl/demo/bbman.sub_0819.bad.svg)
 (It happens after ROM initialization, nothing before it is
-interesting/different)
+interesting/different, FF00 is an IO port to JOYPAD (did I give the answer? :())
 
 How do I use it?
 ----------------
@@ -89,12 +91,12 @@ introduction of the games.
 GB z80 defines the format of each lines as `".* PC: $pc | OPCODE: $opcode + MEM:
 $mem" ` where:
 
-  - $pc is a 4 digit, hexadecimal number being the program number.
-  - $opcode a 2 digit, hexadecimal number representing the current executed
+  - `$pc` is a 4 digit, hexadecimal number being the program number.
+  - `$opcode` a 2 digit, hexadecimal number representing the current executed
     opcode.
-  - $mem a 4 digit, hexadecimal number representing the two bytes following the
+  - `$mem` a 4 digit, hexadecimal number representing the two bytes following the
     opcode in memory. This is used by diassembler.
-  - ".\*" can be replaced by anything.
+  - `.*` can be replaced by anything.
 
 Every line not matching this pattern will be ignored.
 
