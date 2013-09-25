@@ -20,13 +20,13 @@ class DotWriter(w.Writer):
                 block = blocks.pop()
                 if block in blocks_done:
                     continue
-                of.write('\t\t{block_name} [ label = "{code}\\l" ];\n'.format(
+                of.write('\t{block_name} [ label = "{code}\\l" ];\n'.format(
                     block_name = block.uniq_name(),
                     code = str(block).replace('\n', '\\l').replace('\t', ' ' * 4)
                 ))
 
                 for link in block.tos.keys():
-                    of.write('\t\t{}\n'.format(self._generate_link(link)))
+                    of.write('\t{}\n'.format(self._generate_link(link)))
                     blocks.append(link.to)
                 of.write('\n')
                 blocks_done.append(block)
