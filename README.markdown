@@ -11,6 +11,7 @@ Introduction
 This project aims to provide an easier way to debug CPU emulation through
 control analysis of it executes. It helps spot a lot of easy-to-make errors,
 like:
+
   - Bad instruction implementations
     * Flags not set correctly on operations (making loops not work as
       expected).
@@ -21,6 +22,7 @@ like:
   - Invalid memory behavior can also be spotted sometimes.
 
 Comparing graphs with another emulator, it also helps find:
+
   - Find sub functions that never work the same (function that checks a
     register, and your emulator never takes one of the checks? Is the register
     miss-behaving ?)
@@ -41,6 +43,7 @@ where to search for.
 ### What does it support?
 
 It supports:
+
  - (Conditional) Call backtracking and detection.
  - (Conditional) jumps detection, with triggering/fall-through edge detection.
  - Interrupt detection.
@@ -85,6 +88,7 @@ introduction of the games.
 
 GB z80 defines the format of each lines as `".* PC: $pc | OPCODE: $opcode + MEM:
 $mem" ` where:
+
   - $pc is a 4 digit, hexadecimal number being the program number.
   - $opcode a 2 digit, hexadecimal number representing the current executed
     opcode.
