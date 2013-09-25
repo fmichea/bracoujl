@@ -4,6 +4,16 @@ bracoujl - Control Flow Analysis
 Introduction
 ------------
 
+This program helps rebuild graphs of the program executed by a CPU. This is
+useful when you are writing it and you and up with crashes or unexpected
+behavior, If you don't really know where the bug is in your CPU, it will be
+hard to follow the execution step by step of your emulator. You could implement
+a little debugger for your CPU and try to use it on the ROM, or you could try
+this tool. It will show you in a readable format what you executed.
+
+If this README is not easy to read or understand, please shout me an email,
+thanks!
+
 ### Why use this tool?
 
 #### What will I find out?
