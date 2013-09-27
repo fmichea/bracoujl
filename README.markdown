@@ -229,10 +229,6 @@ For now, there is no serialization so it will generate again both graphs.... but
 then it will give you all this information! I think the messages are explicit
 enough :)
 
-Notes: non-uniq blocks are not compared correctly for now (the blocks with
-another address appended), so they will appear "only reached from". This bug
-will hopefully be fixed soon.
-
 ### Writing a CPU description.
 
 Please read the current gameboy CPU written in `bracoujl/processor/gb_z80.py`.
