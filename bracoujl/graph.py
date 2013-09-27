@@ -122,7 +122,8 @@ class Block:
     def __init__(self, inst, inst_class=Instruction):
         self.insts, self.block_type = [inst_class(inst)], BlockType.LOC
         self.froms, self.tos = Counter(), Counter()
-        self.tlf, self.uniq, self.within = False, True, []
+        self.tlf, self.within = False, []
+        self.uniq, self.uniq_id = True, 0
 
     def __str__(self):
         res = '{name}:\n'.format(name=self.name())
@@ -145,7 +146,7 @@ class Block:
     def uniq_name(self):
         name = self.name()
         if not self.uniq:
-            name += '_' + hex(id(self))[2:]
+            name += '_{uniq_id}'.format(uniq_id=self.uniq_id)
         return name
 
     def accepts_merge_top(self):
@@ -307,6 +308,7 @@ class Graph:
                     if 0 < len(blocks[block['pc']]):
                         # No loop needed, if we set the first one and each one
                         # from the second, we will set them all.
+                        block.uniq_id = len(blocks[block['pc']])
                         blocks[block['pc']][0].uniq = False
                         block.uniq = False
                     blocks[block['pc']].append(block)

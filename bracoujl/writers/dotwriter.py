@@ -18,7 +18,7 @@ class DotWriter(w.Writer):
             blocks, blocks_done = [function], []
             while blocks:
                 block = blocks.pop()
-                if block in blocks_done:
+                if block.uniq_name() in blocks_done:
                     continue
                 of.write('\t{block_name} [ label = "{code}\\l" ];\n'.format(
                     block_name = block.uniq_name(),
@@ -29,7 +29,7 @@ class DotWriter(w.Writer):
                     of.write('\t{}\n'.format(self._generate_link(link)))
                     blocks.append(link.to)
                 of.write('\n')
-                blocks_done.append(block)
+                blocks_done.append(block.uniq_name())
 
             of.write('}\n')
 
