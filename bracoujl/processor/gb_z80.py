@@ -91,7 +91,7 @@ class GBZ80Disassembler:
             return 'ldh ($0x{:04X}), %a'.format(0xFF00 + addr)
         def op_a_d8(op, inst):
             d8 = inst['mem'][0]
-            return '{} %a, $0x{}'.format(op, d8)
+            return '{} %a, $0x{:X}'.format(op, d8)
         def add_sp_r8(inst):
             r8 = struct.unpack('b', inst['mem'][:1])[0]
             return 'add %sp, $0x{:02X} ; (${:d})'.format(r8 & 0xff, r8)
