@@ -326,7 +326,8 @@ class Graph:
                     # place where we were called.
                     try:
                         backblock, size = backtrace[-1]
-                        if size == 0 or block['pc'] == backblock['pc'] + size:
+                        if ((size == 0 or block['pc'] == backblock['pc'] + size) or
+                            block['pc'] in proc.CPU_CONF['interrupts']):
                             last_block = backblock
                             link = find_link(last_block, block)
                             backtrace.pop()
@@ -343,19 +344,20 @@ class Graph:
                             # wether we know the triggering link or not.
                             if offset == proc.CPU_CONF[spec_op + '_size']:
                                 link.link_type = LinkType.NOT_TAKEN
-                            elif not last_block.tlf:
-                                # Offset is not the size of the opcode *and*
-                                # this is the first time it happens, we are on
-                                # the triggering link.
+                            else:
+                                if not last_block.tlf:
+                                    # Offset is not the size of the opcode
+                                    # *and* this is the first time it happens,
+                                    # we are on the triggering link.
+                                    if spec_op == 'call_opcodes':
+                                        block.block_type = BlockType.SUB
+                                        link.link_type = LinkType.CALL_TAKEN
+                                    else:
+                                        link.link_type = LinkType.TAKEN
+                                    last_block.tlf = True
                                 if spec_op == 'call_opcodes':
-                                    block.block_type = BlockType.SUB
-                                    link.link_type = LinkType.CALL_TAKEN
-                                else:
-                                    link.link_type = LinkType.TAKEN
-                                last_block.tlf = True
-                            if spec_op == 'call_opcodes':
-                                size = proc.CPU_CONF['call_opcodes_size']
-                                backtrace.append((last_block, size))
+                                    size = proc.CPU_CONF['call_opcodes_size']
+                                    backtrace.append((last_block, size))
 
                 if block['pc'] in proc.CPU_CONF['interrupts']:
                     # If the block is the beginning of an interrupt, we don't
