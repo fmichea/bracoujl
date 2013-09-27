@@ -402,14 +402,15 @@ class Graph:
                 # For each link, if it's a call link (it is marked "taken"),
                 # then we remove this link and place a little box instead, to
                 # be able to split the functions' graphs in multiple files.
-                items = list(subblock.froms.items())
-                for from_, cnt in items:
+                itemskey = lambda l: l[0].from_['pc']
+                items = list(sorted(subblock.froms.items(), key=itemskey))
+                for idx, (from_, cnt) in enumerate(items):
                     if from_.link_type != LinkType.CALL_TAKEN:
                         continue
                     call_str = 'Call to {}.'.format(subblock.name())
                     call_block = SpecialBlock({'pc': subblock['pc']}, call_str,
                                               mergeable=False)
-                    call_block.uniq = False
+                    call_block.uniq, call_block.uniq_id = False, idx
                     link = Link(from_.from_, call_block)
                     link.link_type = LinkType.CALL_TAKEN
                     for _ in range(cnt):
